@@ -91,6 +91,7 @@ export const DeviceFormSpec: FormlyFieldConfig[] = [
       label: 'IP Address',
       placeholder: '10.1.2.3',
       required: true,
+      helpText: 'IPv4 address assigned to the device',
     }
   },
 ];

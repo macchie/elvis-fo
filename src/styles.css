@@ -99,12 +99,6 @@ form {
 
 p-buttongroup.belongs-to {
   .p-buttongroup {
-    display: flex;
-    width: 100%;
-    flex-direction: row;
-    align-items: stretch;
-    justify-content: stretch;
-
     p-button {
       &.fluid {
         display: flex;
@@ -117,4 +111,3 @@ p-buttongroup.belongs-to {
     }
   }
 }
-

@@ -25,15 +25,15 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps
       [formlyAttributes]="field"
     />
 
-    <p-buttongroup class="belongs-to" [style]="{ width: '100% !important' }">
+    <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
       <p-button (click)="onPreview()" [disabled]="!formControl.value" icon="pi pi-eye" variant="outlined" severity="info"/>
-      <p-button (click)="onSelect(); op.toggle($event)" class="fluid" [label]="formControl.value || 'Select'" variant="outlined" severity="secondary" />
+      <p-button (click)="onSelect(); op.toggle($event)" class="fluid grow" [label]="formControl.value || 'Select'" variant="outlined" severity="secondary" />
       <p-button (click)="onClear()" [disabled]="!formControl.value" icon="pi pi-times" variant="outlined" severity="danger" />
     </p-buttongroup>
 
     <p-popover #op>
       <div class="flex flex-col gap-4 w-[25rem]">
-        <div>
+        <!-- <div>
             <span class="font-medium text-surface-900 dark:text-surface-0 block mb-2">Share this document</span>
             <p-inputgroup>
                 <input pInputText value="https://primeng.org/12323ff26t2g243g423g234gg52hy25XADXAG3" readonly class="w-[25rem]" />
@@ -50,7 +50,7 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps
                     <button pButton label="Invite" icon="pi pi-users"></button>
                 </p-inputgroup>
             </div>
-        </div>
+        </div> -->
         <div>
           <span class="font-medium text-surface-900 dark:text-surface-0 block mb-2">Team Members</span>
           <ul class="list-none p-0 m-0 flex flex-col gap-4">
@@ -61,10 +61,10 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps
                   <span class="font-medium">{{ member.name }}</span>
                   <div class="text-sm text-muted-color">{{ member.email }}</div>
                 </div>
-                <div class="flex items-center gap-2 text-muted-color ml-auto text-sm">
+                <!-- <div class="flex items-center gap-2 text-muted-color ml-auto text-sm">
                   <span>{{ member.role }}</span>
                   <i class="pi pi-angle-down"></i>
-                </div>
+                </div> -->
               </li>
             }
           </ul>
