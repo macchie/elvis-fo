@@ -1,0 +1,120 @@
+
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+
+@import "primeicons/primeicons.css";
+
+@theme {
+  /* --color-curious-blue-50: #f1f9fe;
+  --color-curious-blue-100: #e3f1fb;
+  --color-curious-blue-200: #c0e4f7;
+  --color-curious-blue-300: #89d0f0;
+  --color-curious-blue-400: #4ab7e6;
+  --color-curious-blue-500: #229ace;
+  --color-curious-blue-600: #157fb4;
+  --color-curious-blue-700: #126692;
+  --color-curious-blue-800: #135679;
+  --color-curious-blue-900: #154965;
+  --color-curious-blue-950: #0e2e43;
+
+  --color-primary-50: var(--color-curious-blue-50);
+  --color-primary-100: var(--color-curious-blue-100);
+  --color-primary-200: var(--color-curious-blue-200);
+  --color-primary-300: var(--color-curious-blue-300);
+  --color-primary-400: var(--color-curious-blue-400);
+  --color-primary-500: var(--color-curious-blue-500);
+  --color-primary-600: var(--color-curious-blue-600);
+  --color-primary-700: var(--color-curious-blue-700);
+  --color-primary-800: var(--color-curious-blue-800);
+  --color-primary-900: var(--color-curious-blue-900);
+  --color-primary-950: var(--color-curious-blue-950); */
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #f5f5f5;
+}
+
+
+p-menu {
+  .p-menu {
+    ul.p-menu-list {
+      background-color: #ffffff;
+      padding: 0;
+
+      li.p-menu-item {
+        
+        .p-menu-item-content {
+          padding-left: 16px;
+
+          .p-menu-item-icon {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+form {
+  width: 100%;
+  margin: 0 auto;
+
+  formly-form {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+  
+    formly-group {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: stretch;
+      flex-wrap: wrap;
+      width: 100%;
+      gap: 16px;
+    }
+  
+    formly-field {
+      flex: 1 0 100%;
+  
+      &.col-8{
+        flex: 0 0 calc(66.6% - 5px);
+      }
+
+      &.col-6 {
+        flex: 0 0 calc(50% - 8px);
+      }
+    
+      &.col-4 {
+        flex: 0 0 calc(33.3% - 10.5px);
+      }
+    }
+  }
+}
+
+p-buttongroup.belongs-to {
+  .p-buttongroup {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: stretch;
+
+    p-button {
+      &.fluid {
+        display: flex;
+        flex: 1;
+
+        button {
+          flex: 1;
+        }
+      }
+    }
+  }
+}
+

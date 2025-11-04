@@ -1,6 +1,6 @@
 
 <div id="app">
-  <div id="menu">
+  <div id="menu" class="bg-primary-100 text-white">
     <div id="logo">ElvisFO</div>
 
     <p-scrollpanel [style]="{ width: '100%', height: 'calc(100vh - 128px)' }">
@@ -8,14 +8,29 @@
     </p-scrollpanel>
   </div>
   
-  <div id="content">
+  <div id="content" class="bg-primary-500">
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit(model)">
-      <formly-form [form]="form" [fields]="fields" [model]="model"></formly-form>
-      <br>
-      <br>
-      <button type="submit" class="btn btn-default">Submit</button>
-    </form>
+    <p-card header="Company Form">
+      <form [formGroup]="companyForm" (ngSubmit)="onSubmit(models.companyForm)">
+        <formly-form [form]="companyForm" [fields]="companyFormFields" [model]="models.companyForm"></formly-form>
+        <!-- <button type="submit" class="btn btn-default">Submit</button> -->
+      </form>
+    </p-card>
+
+    <p-card header="Logo Form">
+      <form [formGroup]="logoForm" (ngSubmit)="onSubmit(models.logoForm)">
+        <formly-form [form]="logoForm" [fields]="logoFormFields" [model]="models.logoForm"></formly-form>
+        <!-- <button type="submit" class="btn btn-default">Submit</button> -->
+      </form>
+    </p-card>
+
+    <p-card header="Device Form">
+      <form [formGroup]="deviceForm" (ngSubmit)="onSubmit(models.deviceForm)">
+        <formly-form [form]="deviceForm" [fields]="deviceFormFields" [model]="models.deviceForm"></formly-form>
+        <!-- <button type="submit" class="btn btn-default">Submit</button> -->
+      </form>
+    </p-card>
+    
 
     <!-- <form [formGroup]="form">
       <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
