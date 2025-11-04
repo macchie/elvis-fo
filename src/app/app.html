@@ -6,6 +6,11 @@
     <p-scrollpanel [style]="{ width: '100%', height: 'calc(100vh - 128px)' }">
       <p-menu [model]="items" />
     </p-scrollpanel>
+
+    <!-- <div class="card flex justify-center">
+      <p-button label="Toggle All" [text]="true" (onClick)="toggleAll()" />
+      <p-panelmenu [model]="items" class="w-full md:w-80" />
+    </div> -->
   </div>
   
   <div id="content" class="bg-primary-200">
@@ -36,7 +41,8 @@
       <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
     </form> -->
     
-    <!-- <div id="toolbar"> </div>
-    <router-outlet /> -->
+    <!-- <div id="toolbar"> </div> -->
+
+    <router-outlet />
   </div>
 </div>
