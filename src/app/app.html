@@ -4,45 +4,27 @@
     <div id="logo">ElvisFO</div>
 
     <p-scrollpanel [style]="{ width: '100%', height: 'calc(100vh - 128px)' }">
-      <p-menu [model]="items" />
+      <!-- <p-menu [model]="items" /> -->
+      <div class="card flex justify-center px-2 py-0">
+        <!-- <p-panelmenu [model]="items" class="w-full md:w-80" /> -->
+        <p-panelmenu [model]="items" class="w-full" />
+      </div>
     </p-scrollpanel>
 
-    <!-- <div class="card flex justify-center">
-      <p-button label="Toggle All" [text]="true" (onClick)="toggleAll()" />
-      <p-panelmenu [model]="items" class="w-full md:w-80" />
-    </div> -->
   </div>
   
   <div id="content" class="bg-primary-200">
 
-    <p-card header="Company Form">
-      <form [formGroup]="companyForm" (ngSubmit)="onSubmit(models.companyForm)">
-        <formly-form [form]="companyForm" [fields]="companyFormFields" [model]="models.companyForm"></formly-form>
-        <!-- <button type="submit" class="btn btn-default">Submit</button> -->
-      </form>
-    </p-card>
-
-    <p-card header="Logo Form">
-      <form [formGroup]="logoForm" (ngSubmit)="onSubmit(models.logoForm)">
-        <formly-form [form]="logoForm" [fields]="logoFormFields" [model]="models.logoForm"></formly-form>
-        <!-- <button type="submit" class="btn btn-default">Submit</button> -->
-      </form>
-    </p-card>
-
-    <p-card header="Device Form">
-      <form [formGroup]="deviceForm" (ngSubmit)="onSubmit(models.deviceForm)">
-        <formly-form [form]="deviceForm" [fields]="deviceFormFields" [model]="models.deviceForm"></formly-form>
-        <!-- <button type="submit" class="btn btn-default">Submit</button> -->
-      </form>
-    </p-card>
-    
-
-    <!-- <form [formGroup]="form">
-      <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
-    </form> -->
-    
-    <!-- <div id="toolbar"> </div> -->
-
+    @for (_table of this.mockDataSvc.tableInfoArray; track $index) {
+      <p-card [header]="_table.name">
+        <app-entity-form-builder [hostId]="_table.name"></app-entity-form-builder>
+        <p-divider />
+        <form [formGroup]="forms[_table.name]">
+          <formly-form [form]="forms[_table.name]" [fields]="this.mockDataSvc.tableInfo[_table.name]?.formSpec || []" [model]="{}"></formly-form>
+        </form>
+      </p-card>
+    }
+ 
     <router-outlet />
   </div>
 </div>

@@ -1,0 +1,141 @@
+
+<div id="builder-content" #builderContent class="grid grid-cols-6 gap-4 p-2">
+  @for (_field of _formSpec; track $index;) {
+    <div
+      #fieldSpec
+      id="field-spec"
+      class="p-2 {{_field.className}}"
+      (contextmenu)="openContextMenu($event, _field, $index)"
+    >
+      <div id="toolbar" class="flex flex-row items-end justify-between" [class.mb-2]="_field.type != 'spacer'">
+        <p-select
+          [options]="stateOptions" optionLabel="label" 
+          optionValue="value" 
+          size="small"
+          [(ngModel)]="_field.className" 
+        />
+
+        <div>
+          <p-button 
+            class="mr-2"
+            icon="pi pi-pen-to-square" severity="secondary" size="small"
+            [outlined]="true" [rounded]="true"
+            (click)="onEditField($index, $event)"
+          />
+          <p-button 
+            icon="pi pi-trash" severity="danger" size="small" 
+            [outlined]="true" [rounded]="true"
+            (click)="onRemoveField($index, $event)"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-col">
+
+        @if (_field.type != 'spacer') {
+          <label for="{{_field.key}}">
+            {{_field.props.label || _field.key}}
+            @if (_field.props.required) {
+              <span class="text-red-600">*</span>
+            }
+          </label>
+        }
+  
+        @if (_field.type == 'input' || _field.type == 'integer' || _field.type == 'datepicker') {
+          <input
+            pInputText fluid
+            [type]="_field.type === 'integer' ? 'integer' : 'text'"
+            id="{{_field.key}}"
+            name="{{_field.key}}"
+            placeholder="{{_field.placeholder}}"
+            disabled="true"
+          />
+        }
+  
+        @if (_field.type == 'belongs-to') {
+          <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
+            <p-button disabled icon="pi pi-eye" variant="outlined" severity="info" />
+            <p-button fluid disabled class="grow" label="Select" variant="outlined" severity="secondary" />
+            <p-button disabled icon="pi pi-times" variant="outlined"
+              severity="danger" />
+          </p-buttongroup>
+        }
+      </div>
+    </div>
+  } 
+
+</div>
+<br>
+<div class="flex flex-row items-between justify-between">
+  <p-button (click)="onAddField()">Add Field</p-button>
+  <p-button (click)="onSave()" severity="success">Save Form</p-button>
+</div>
+
+<p-popover #editFieldPopover>
+  @if (_currentFieldIdx >= 0 && _formSpec[_currentFieldIdx]) {
+    <div class="flex flex-col gap-4 w-[25rem]">
+      <div class="flex flex-col gap-2">
+        <span class="font-medium text-surface-900 dark:text-surface-0 block mb-3">Field Properties</span>
+
+        <p-floatlabel variant="on" class="mb-2">
+          <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" placeholder="Select Field" [(ngModel)]="_formSpec[_currentFieldIdx].key" (ngModelChange)="onChangeFieldKey(_currentFieldIdx, $event)" />
+          <label for="key">Column Name</label>
+        </p-floatlabel>
+
+        @if (_formSpec[_currentFieldIdx].type != 'spacer') {
+          <p-floatlabel variant="on" class="mb-2">
+            <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name" optionValue="code" placeholder="Select Field Type" [(ngModel)]="_formSpec[_currentFieldIdx].type" (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)"  />
+            <label for="key">Type</label>
+          </p-floatlabel>
+          <p-floatlabel variant="on" class="mb-2">
+            <input pInputText fluid type="text" placeholder="Field Label" [(ngModel)]="_formSpec[_currentFieldIdx].props.label" />
+            <label for="key">Label:</label>
+          </p-floatlabel>
+          <div class="flex flex-row items-center justify-end">
+            <label for="required" class="m-0 p-0 mr-4">Required</label>
+            <p-toggleswitch id="required" [(ngModel)]="_formSpec[_currentFieldIdx].props.required" />
+          </div>
+        }
+
+        @if (_formSpec[_currentFieldIdx].type == 'input' || _formSpec[_currentFieldIdx].type == 'integer' || _formSpec[_currentFieldIdx].type == 'datepicker') {
+          <p-divider></p-divider>
+          <p-floatlabel variant="on" class="mb-2">
+            <input pInputText fluid type="text" placeholder="Field Placeholder" [(ngModel)]="_formSpec[_currentFieldIdx].placeholder" />
+            <label for="key">Placeholder</label>
+          </p-floatlabel>
+        }
+
+        @if (_formSpec[_currentFieldIdx].type == 'belongs-to') {
+          <p-divider></p-divider>
+          <!-- <span class="font-medium text-surface-900 dark:text-surface-0 block mb-3">Belongs To Options</span> -->
+
+          <p-floatlabel variant="on" class="mb-2">
+            <input pInputText fluid disabled type="text" placeholder="From Entity" [(ngModel)]="_formSpec[_currentFieldIdx].props.fromEntity" />
+            <label for="fromEntity">From Entity</label>
+          </p-floatlabel>
+          <p-floatlabel variant="on" class="mb-2">
+            <input pInputText fluid disabled type="text" placeholder="From Field" [(ngModel)]="_formSpec[_currentFieldIdx].props.fromField" />
+            <label for="fromField">From Field</label>
+          </p-floatlabel>
+          <p-floatlabel variant="on" class="mb-2">
+            <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="_formSpec[_currentFieldIdx].props.toEntity" (ngModelChange)="_formSpec[_currentFieldIdx].props.toField = null" />
+            <label for="toEntity">To Entity</label>
+          </p-floatlabel>
+          
+          @if (_formSpec[_currentFieldIdx].props.toEntity) {
+            <p-floatlabel variant="on" class="mb-2">
+              <p-select fluid [disabled]="!_formSpec[_currentFieldIdx].props.toEntity" [options]="mockDataSvc.tableInfo[_formSpec[_currentFieldIdx].props.toEntity].columns" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="_formSpec[_currentFieldIdx].props.toField" />
+              <!-- <input pInputText fluid type="text" placeholder="To Field"  [(ngModel)]="_formSpec[_currentFieldIdx].props.toField" /> -->
+              <label for="toField">To Field</label>
+            </p-floatlabel>
+          }
+        }
+      </div>
+    </div>
+  }
+</p-popover>
+
+<p-contextmenu 
+  #contextMenu
+  [model]="fieldContextMenuItems" 
+/>

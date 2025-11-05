@@ -27,7 +27,7 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps
 
     <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
       <p-button (click)="onPreview()" [disabled]="!formControl.value" icon="pi pi-eye" variant="outlined" severity="info"/>
-      <p-button (click)="onSelect(); op.toggle($event)" class="fluid grow" [label]="formControl.value || 'Select'" variant="outlined" severity="secondary" />
+      <p-button fluid (click)="onSelect(); op.toggle($event)" class="grow" [label]="formControl.value || 'Select'" variant="outlined" severity="secondary" />
       <p-button (click)="onClear()" [disabled]="!formControl.value" icon="pi pi-times" variant="outlined" severity="danger" />
     </p-buttongroup>
 

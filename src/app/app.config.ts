@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, inject, provideAppInitializer, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
@@ -9,6 +9,9 @@ import Aura from '@primeuix/themes/aura';
 import { routes } from './app.routes';
 import { provideFormlyCore } from '@ngx-formly/core';
 import { withFormlyElvisFO } from './ui/elvisfo/ui-elvisfo.config';
+import { provideHttpClient } from '@angular/common/http';
+import { MockData } from './services/mock-data';
+import { appInitializer } from './app.initializer';
 
 const THEME_COLOR = 'slate';
 
@@ -52,7 +55,9 @@ export const appConfig: ApplicationConfig = {
     provideFormlyCore(withFormlyElvisFO()),
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideRouter(routes)
+    provideRouter(routes),
+    provideHttpClient(),
+    provideAppInitializer(() => appInitializer())
   ]
 };
 

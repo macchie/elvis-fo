@@ -11,17 +11,23 @@ export interface FormlyFieldProps extends CoreFormlyFieldProps {
   selector: 'formly-wrapper-elvisfo-form-field',
   styleUrl: './form-field.wrapper.scss',
   template: `
-    <div class="flex flex-col">
-      <label class="mb-1" *ngIf="props.label && props.hideLabel !== true" [for]="id">
-        {{ props.label }}
-        <span *ngIf="props.required && props.hideRequiredMarker !== true" aria-hidden="true">*</span>
-      </label>
+    <div class="flex flex-col gap-2">
+      @if (props.label && props.hideLabel !== true) {
+        <label [for]="id">
+          {{ props.label }}
+          @if (props.required && props.hideRequiredMarker !== true) {
+            <span class="text-red-600" aria-hidden="true">*</span>
+          }
+        </label>
+      }
       
       <ng-container #fieldComponent></ng-container>
 
-      <small *ngIf="showError" class="p-error">
-        <formly-validation-message class="ui-message-text" [field]="field"></formly-validation-message>
-      </small>
+      @if (showError) {
+        <small class="p-error">
+          <formly-validation-message class="ui-message-text" [field]="field"></formly-validation-message>
+        </small>
+      }
     </div>
   `,
   standalone: false
