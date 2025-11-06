@@ -1,4 +1,4 @@
-<p-table #dt2 [value]="data" dataKey="id" [rows]="10" [columns]="fieldList" [reorderableColumns]="true" size="small"
+<p-table #entityTable [value]="data" dataKey="id" [rows]="10" [columns]="fieldList" [reorderableColumns]="true" size="small"
   [rowsPerPageOptions]="[10, 20, 50, 100]" [loading]="loading" [paginator]="true"
   [tableStyle]="{ 'min-width': '100%' }">
   <!-- [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']" -->

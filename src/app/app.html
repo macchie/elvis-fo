@@ -12,38 +12,34 @@
   </div> -->
   
   <div id="content" class="bg-primary-200">
-
     <p-card>
-      <app-entity-table hostId="system.devices"></app-entity-table>
-    </p-card>
-
-    <p-card [header]="">
-      @for (_table of this.mockDataSvc.tableInfoArray; track $index) {
-        <p-accordion [multiple]="true">
-          <p-accordion-panel value="0">
-            <p-accordion-header>{{_table.name}}</p-accordion-header>
-            <p-accordion-content>
-              <p-tabs value="0">
-                <p-tablist>
-                  <p-tab value="0">Form</p-tab>
-                  <p-tab value="1">Form Builder</p-tab>
-                </p-tablist>
-                <p-tabpanels>
-                  <p-tabpanel value="0">
-                    <form [formGroup]="forms[_table.name]">
-                      <formly-form [form]="forms[_table.name]" [fields]="this.mockDataSvc.tableInfo[_table.name]?.formSpec || []" [model]="{}"></formly-form>
-                    </form>
-                  </p-tabpanel>
-                  <p-tabpanel value="1">
-                    <app-entity-form-builder [hostId]="_table.name"></app-entity-form-builder>
-                  </p-tabpanel>
-                </p-tabpanels>
-              </p-tabs>
-            </p-accordion-content>
-          </p-accordion-panel>
-        </p-accordion>
+      <div class="flex flex-row items-center justify-between mb-2">
+        <h2>Form</h2>
+        <p-select [options]="this.mockDataSvc.tableInfoArray" [(ngModel)]="_selectedTable" (ngModelChange)="onSelectedTableChange($event)" optionLabel="name" optionValue="name" placeholder="Select a Table" size="small" />
+      </div>
+      @if (_selectedTable) {
+        <p-tabs value="0">
+          <p-tablist>
+            <p-tab value="0">Form</p-tab>
+            <p-tab value="1">Form Builder</p-tab>
+          </p-tablist>
+          <p-tabpanels>
+            <p-tabpanel value="0">
+              <form [formGroup]="forms[_selectedTable]">
+                <formly-form #formlyForm [form]="forms[_selectedTable]" [fields]="this.mockDataSvc.tableInfo[_selectedTable]?.formSpec || []" [model]="formModels[_selectedTable]"></formly-form>
+              </form>
+            </p-tabpanel>
+            <p-tabpanel value="1">
+              <app-entity-form-builder #formBuilder [hostId]="_selectedTable"></app-entity-form-builder>
+            </p-tabpanel>
+          </p-tabpanels>
+        </p-tabs>
       }
     </p-card>
+
+    <!-- <p-card header="Tables">
+      <app-entity-table hostId="auth.user"></app-entity-table>
+    </p-card> -->
  
     <router-outlet />
   </div>

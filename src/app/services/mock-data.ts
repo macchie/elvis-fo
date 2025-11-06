@@ -44,6 +44,8 @@ export interface TableInfo {
 export class MockData {
 
   public TABLES = [
+    'auth.user',
+    'elvispos.departments',
     'system.store',
     'system.users',
     'system.companies',
@@ -65,6 +67,7 @@ export class MockData {
   ) {}
 
   async init() {
+    console.time('MockData Load');
     const _requests = [];
 
     for (const _table of this.TABLES) {
@@ -87,11 +90,15 @@ export class MockData {
       _formSpecsCount++;
     }
 
+    console.timeEnd('MockData Load');
+
     console.log(`Loaded Form Definitions: ${Object.keys(_formSpecsCount).length}x`);
   }
 
   async getEntities(_table: string): Promise<any[]> {
-    const query = `SELECT * FROM ${_table} LIMIT 100`;
+    const orderBy = this.tableInfo[_table]?.primary_key ? 
+      ` ORDER BY ${this.tableInfo[_table].primary_key} ASC ` : '';
+    const query = `SELECT * FROM ${_table} ${orderBy} LIMIT 100`;
 
     try {
       const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
@@ -104,7 +111,9 @@ export class MockData {
   }
 
   async getEntity(_table: string): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
-    const query = `SELECT * FROM ${_table} LIMIT 1`;
+    const orderBy = this.tableInfo[_table]?.primary_key ? 
+      ` ORDER BY ${this.tableInfo[_table].primary_key} ASC ` : '';
+    const query = `SELECT * FROM ${_table} ${orderBy} LIMIT 1`;
 
     try {
       const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);

@@ -21,29 +21,43 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<InputProps> {
   styleUrl: './input.type.scss',
   template: `
     <p-inputgroup>
-      <p-inputgroup-addon *ngIf="props.prefixIcon || props.prefixText">
-        <i *ngIf="props.prefixIcon" [class]="props.prefixIcon"></i>
-        <span *ngIf="props.prefixText" [innerHTML]="props.prefixText"></span>
-      </p-inputgroup-addon>
+      @if (props.prefixIcon || props.prefixText) {
+        <p-inputgroup-addon>
+          @if (props.prefixIcon) {
+            <i [class]="props.prefixIcon"></i>
+          }
+          @if (props.prefixText) {
+            <span [innerHTML]="props.prefixText"></span>
+          }
+        </p-inputgroup-addon>
+      }
 
       <input
         pInputText fluid
-        *ngIf="props.type !== 'number'; else numberTmp"
         [type]="props.type || 'text'"
         [formControl]="formControl"
         [formlyAttributes]="field"
       />
-      <ng-template #numberTmp>
+      <!-- @if (props.type !== 'number') {
+      } @else {
         <input pInputText fluid type="number" [formControl]="formControl" [formlyAttributes]="field" />
-      </ng-template>
+      } -->
 
-      <p-inputgroup-addon *ngIf="props.suffixIcon || props.suffixText">
-        <i *ngIf="props.suffixIcon" [class]="props.suffixIcon"></i>
-        <span *ngIf="props.suffixText" [innerHTML]="props.suffixText"></span>
-      </p-inputgroup-addon>
+      @if (props.suffixIcon || props.suffixText) {
+        <p-inputgroup-addon>
+          @if (props.suffixIcon) {
+            <i [class]="props.suffixIcon"></i>
+          }
+          @if (props.suffixText) {
+            <span [innerHTML]="props.suffixText"></span>
+          }
+        </p-inputgroup-addon>
+      }
     </p-inputgroup>
-
-    <small *ngIf="props.helpText" [innerHTML]="props.helpText"></small>
+    
+    @if (props.helpText) {
+      <small [innerHTML]="props.helpText"></small>
+    }
   `,
 })
 export class FormlyFieldInput extends FieldType<FieldTypeConfig<InputProps>> {

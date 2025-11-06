@@ -11,15 +11,9 @@ export interface FormlyCheckboxFieldConfig extends FormlyFieldConfig<CheckboxPro
 @Component({
   selector: 'formly-field-primeng-checkbox',
   template: `
-    <div class="p-field-checkbox flex items-center gap-1">
-      <p-checkbox
-        [binary]="true"
-        [formControl]="formControl"
-        [formlyAttributes]="field"
-        [inputId]="id"
-        [id]="id"
-      />
-      <label [for]="id" class="ml-2">{{ props.label }}</label>
+    <div class="flex flex-row items-center justify-end pt-10 mb-1">
+      <label [for]="id" class="m-0 p-0 mr-4">{{ props.label }}</label>
+      <p-toggleswitch [id]="id" [inputId]="id" [formControl]="formControl" [formlyAttributes]="field" />
     </div>
   `,
   standalone: false,

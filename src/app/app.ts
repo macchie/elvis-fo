@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
@@ -20,6 +20,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { EntityTable } from './components/entity-table/entity-table';
+import { SelectModule } from 'primeng/select';
 
 
 @Component({
@@ -27,7 +28,6 @@ import { EntityTable } from './components/entity-table/entity-table';
   imports: [
     CommonModule,
     RouterOutlet,
-    // Menu,
     ToastModule,
     ScrollPanelModule,
     FormsModule,
@@ -45,7 +45,8 @@ import { EntityTable } from './components/entity-table/entity-table';
     InputIconModule,
     TagModule,
     MultiSelectModule,
-    EntityTable
+    EntityTable,
+    SelectModule
 ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
@@ -55,6 +56,30 @@ export class App implements OnInit {
   items: MenuItem[] = [] ;
 
   forms: { [key: string]: FormGroup } = {};
+
+  @ViewChild('formlyForm', { static: false }) 
+  formlyFormComponent!: FormlyForm;
+
+  @ViewChild('formBuilder', { static: false }) 
+  formBuilderComponent!: EntityFormBuilder;
+
+  formModels: { [key: string]: any } = {};
+
+  _selectedTable?: string;
+  async onSelectedTableChange(_event: any) {
+    if (!this._selectedTable) {
+      return;
+    }
+
+    if (!this.formModels[this._selectedTable]) {
+      this.forms[this._selectedTable] = new FormGroup({});
+      this.formModels[this._selectedTable] = await this.mockDataSvc.getEntity(this._selectedTable);
+    }
+
+    console.log('Selected Table changed:', this._selectedTable);
+    this.formBuilderComponent.hostId = this._selectedTable;
+    this.formBuilderComponent.ngOnInit();
+  }
 
   constructor(
     public mockDataSvc: MockData
@@ -107,18 +132,9 @@ export class App implements OnInit {
 
     for (const _key of Object.keys(this.mockDataSvc.tableInfo)) {
       this.forms[_key] = new FormGroup({});
-      this.forms[_key].patchValue(await this.mockDataSvc.getEntity(_key));
+      // this.forms[_key].patchValue(await this.mockDataSvc.getEntity(_key));
     }
 
-    
-    // this.customerService.getCustomersLarge().then((customers) => {
-
-    //   this.customers.forEach((customer) => (customer.date = new Date(<Date>customer.date)));
-    // });
-
-    
-
-   
   }
   
   onSubmit(model: any) {

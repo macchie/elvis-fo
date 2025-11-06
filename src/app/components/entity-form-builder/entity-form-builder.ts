@@ -23,12 +23,14 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 export const FieldType = {
   INPUT: { code: 'input', name: 'Text Input' },
   INTEGER: { code: 'integer', name: 'Integer Input' },
+  PASSWORD: { code: 'password', name: 'Password Input' },
   TEXTAREA: { code: 'textarea', name: 'Text Area' },
   SELECT: { code: 'select', name: 'Select Dropdown' },
   CHECKBOX: { code: 'checkbox', name: 'Checkbox' },
   RADIO: { code: 'radio', name: 'Radio Buttons' },
   DATE: { code: 'datepicker', name: 'Date Picker' },
   BELONGS_TO: { code: 'belongs-to', name: 'Relation: Belongs To' },
+  HAS_MANY: { code: 'has-many', name: 'Relation: Has Many' },
 }
 
 @Component({
@@ -264,6 +266,15 @@ export class EntityFormBuilder implements OnInit {
             }
           }
           break;
+        case 'boolean':
+          this.fieldTypes = [
+            FieldType.CHECKBOX,
+            FieldType.BELONGS_TO,
+          ];
+          if (!this._formSpec[_index].type || this._formSpec[_index].type === 'spacer') {
+            this._formSpec[_index].type = FieldType.CHECKBOX.code;
+          }
+          break;
         case 'timestamp with time zone':
         case 'timestamp without time zone':
           this.fieldTypes = [
@@ -277,6 +288,7 @@ export class EntityFormBuilder implements OnInit {
         default:
           this.fieldTypes = [
             FieldType.INPUT,
+            FieldType.PASSWORD,
             FieldType.INTEGER,
             FieldType.TEXTAREA,
             FieldType.SELECT,
@@ -284,8 +296,9 @@ export class EntityFormBuilder implements OnInit {
             FieldType.RADIO,
             FieldType.DATE,
             FieldType.BELONGS_TO,
+            FieldType.HAS_MANY,
           ];
-          if (!this._formSpec[_index].type) {
+          if (!this._formSpec[_index].type || this._formSpec[_index].type === 'spacer') {
             this._formSpec[_index].type = FieldType.INPUT.code;
           }
           break;

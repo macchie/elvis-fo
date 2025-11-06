@@ -21,6 +21,15 @@ export function withFormlyFieldInput(): ConfigOption {
         },
       },
       {
+        name: 'password',
+        extends: 'input',
+        defaultOptions: {
+          props: {
+            type: 'password',
+          },
+        },
+      },
+      {
         name: 'integer',
         extends: 'input',
         defaultOptions: {
