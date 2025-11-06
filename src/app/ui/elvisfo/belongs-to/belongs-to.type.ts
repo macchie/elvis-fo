@@ -3,10 +3,14 @@ import { FieldType, FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core'
 import { FormlyFieldProps } from '../form-field/form-field.wrapper';
 
 interface BelongsToProps extends FormlyFieldProps {
+  disabled?: boolean;
   fromEntity?: string;
   toEntity?: string;
   fromField?: string;
   toField?: string;
+  onChangeAction?: 'NONE' | 'CLEAR_FIELDS';
+  onChangeClearFields?: string;
+  dependsOnFields?: string;
 }
 
 export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps> {
@@ -26,53 +30,14 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps
     />
 
     <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
-      <p-button (click)="onPreview()" [disabled]="!formControl.value" icon="pi pi-eye" variant="outlined" severity="info"/>
-      <p-button fluid (click)="onSelect(); op.toggle($event)" class="grow" [label]="formControl.value || 'Select'" variant="outlined" severity="secondary" />
-      <p-button (click)="onClear()" [disabled]="!formControl.value" icon="pi pi-times" variant="outlined" severity="danger" />
+      <p-button (click)="onPreview()" [disabled]="!formControl.value || props.disabled" icon="pi pi-eye" variant="outlined" severity="info"/>
+      <p-button fluid (click)="onSelect(); op.toggle($event)" [disabled]="props.disabled" class="grow" [label]="formControl.value || (props.placeholder || 'Select')" variant="outlined" severity="secondary" />
+      <p-button (click)="onClear()" [disabled]="!formControl.value || props.disabled" icon="pi pi-times" variant="outlined" severity="danger" />
     </p-buttongroup>
 
     <p-popover #op>
-      <div class="flex flex-col gap-4 w-[25rem]">
-        <!-- <div>
-            <span class="font-medium text-surface-900 dark:text-surface-0 block mb-2">Share this document</span>
-            <p-inputgroup>
-                <input pInputText value="https://primeng.org/12323ff26t2g243g423g234gg52hy25XADXAG3" readonly class="w-[25rem]" />
-                <p-inputgroup-addon>
-                    <i class="pi pi-copy"></i>
-                </p-inputgroup-addon>
-            </p-inputgroup>
-        </div>
-        <div>
-            <span class="font-medium text-surface-900 dark:text-surface-0 block mb-2">Invite Member</span>
-            <div class="flex">
-                <p-inputgroup>
-                    <input pInputText disabled />
-                    <button pButton label="Invite" icon="pi pi-users"></button>
-                </p-inputgroup>
-            </div>
-        </div> -->
-        <div>
-          <span class="font-medium text-surface-900 dark:text-surface-0 block mb-2">Team Members</span>
-          <ul class="list-none p-0 m-0 flex flex-col gap-4">
-            @for(member of members; track member) {
-              <li class="flex items-center gap-2">
-                <img [src]="'https://primefaces.org/cdn/primeng/images/demo/avatar/' + member.image" style="width: 32px" />
-                <div>
-                  <span class="font-medium">{{ member.name }}</span>
-                  <div class="text-sm text-muted-color">{{ member.email }}</div>
-                </div>
-                <!-- <div class="flex items-center gap-2 text-muted-color ml-auto text-sm">
-                  <span>{{ member.role }}</span>
-                  <i class="pi pi-angle-down"></i>
-                </div> -->
-              </li>
-            }
-          </ul>
-        </div>
-    </div>
-  </p-popover>
-
-    <!-- <small *ngIf="_helpText" [innerHTML]="_helpText"></small> -->
+      <div class="flex flex-col gap-4 w-[25rem]"> </div>
+    </p-popover>
   `,
 })
 export class FormlyFieldBelongsTo extends FieldType<FieldTypeConfig<BelongsToProps>> implements OnInit {
@@ -84,18 +49,46 @@ export class FormlyFieldBelongsTo extends FieldType<FieldTypeConfig<BelongsToPro
     super();
   }
 
-  members = [
-    { name: 'Amy Elsner', image: 'amyelsner.png', email: 'amy@email.com', role: 'Owner' },
-    { name: 'Bernardo Dominic', image: 'bernardodominic.png', email: 'bernardo@email.com', role: 'Editor' },
-    { name: 'Ioni Bowcher', image: 'ionibowcher.png', email: 'ioni@email.com', role: 'Viewer' }
-  ];
-
   ngOnInit() {
     if (this.props.fromEntity && this.props.toEntity && this.props.fromField && this.props.toField) {
       this._helpText = `<b>JOIN</b> ${this.props.toEntity} <b>ON</b> (from.${this.props.fromField} = to.${this.props.toField})`;
     } else {
       this._helpText = 'No related entity configured!';
-    } 
+    }
+
+    if (this.props.dependsOnFields && this.props.dependsOnFields.length > 0) {
+      for (const _depField of this.props.dependsOnFields) {
+        this.field?.parent?.formControl?.get(_depField.trim())?.valueChanges.subscribe((_value: any) => {
+          // Implement logic to handle changes in dependent fields
+          console.log('Dependent field changed:', _depField);
+          // For example, you might want to clear the current value
+          if (!_value) {
+            this.formControl.patchValue(null);
+            this.formControl.disable();
+          } else {
+            this.formControl.enable();
+          }
+        });
+      }
+    }
+    
+    if (this.props.onChangeAction) {
+      if (this.props.onChangeAction == 'CLEAR_FIELDS') {
+        this.formControl.valueChanges.subscribe(() => {
+          // Implement field clearing logic here
+          if (this.formControl.dirty) {
+            const _keys = this.props.onChangeClearFields || [];
+            for (const _key of _keys) {
+              console.log('Clearing field due to BELONGS TO change:', _key);
+              const _trimmedKey = _key.trim();
+              if (_trimmedKey && this.field?.parent?.formControl?.get(_trimmedKey)) {
+                this.field.parent.formControl.get(_trimmedKey)?.setValue(null);
+              }
+            }
+          }
+        });
+      }
+    }
   }
   
   onPreview() {
@@ -107,10 +100,12 @@ export class FormlyFieldBelongsTo extends FieldType<FieldTypeConfig<BelongsToPro
   }
 
   onSelect() {
-    this.formControl.setValue(Math.floor(Math.random() * 1000).toString());
+    this.formControl.markAsDirty();
+    this.formControl.patchValue(Math.floor(Math.random() * 1000).toString());
   }
 
   onClear() {
-    this.formControl.setValue(null);
+    this.formControl.markAsDirty();
+    this.formControl.patchValue(null);
   }
 }

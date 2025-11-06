@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Type } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Type, OnInit } from '@angular/core';
 import { FieldType, FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
 import { FormlyFieldSelectProps } from '@ngx-formly/core/select';
 import { Select } from 'primeng/select';
@@ -35,4 +35,9 @@ export interface FormlySelectFieldConfig extends FormlyFieldConfig<SelectProps> 
   standalone: false,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FormlyFieldSelect extends FieldType<FieldTypeConfig<SelectProps>> {}
+export class FormlyFieldSelect extends FieldType<FieldTypeConfig<SelectProps>> {
+
+  constructor() {
+    super();
+  }
+}

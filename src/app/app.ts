@@ -1,7 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
-import { Menu } from 'primeng/menu';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { ToastModule } from 'primeng/toast';
 import { FormlyFieldConfig, FormlyForm, FormlyFormOptions, FormlyAttributes } from "@ngx-formly/core";
@@ -13,6 +12,16 @@ import { MockData } from './services/mock-data';
 import { CommonModule } from '@angular/common';
 import { EntityFormBuilder } from './components/entity-form-builder/entity-form-builder';
 import { DividerModule } from 'primeng/divider';
+import { AccordionModule } from 'primeng/accordion';
+import { TabsModule } from 'primeng/tabs';
+import { Table, TableModule } from 'primeng/table';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { TagModule } from 'primeng/tag';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { EntityTable } from './components/entity-table/entity-table';
+
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -28,8 +37,15 @@ import { DividerModule } from 'primeng/divider';
     ButtonModule,
     PanelMenuModule,
     EntityFormBuilder,
-    FormlyAttributes,
-    DividerModule
+    DividerModule,
+    AccordionModule,
+    TabsModule,
+    TableModule,
+    IconFieldModule,
+    InputIconModule,
+    TagModule,
+    MultiSelectModule,
+    EntityTable
 ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
@@ -43,9 +59,6 @@ export class App implements OnInit {
   constructor(
     public mockDataSvc: MockData
   ) {
-    for (const _tableKey of Object.keys(this.mockDataSvc.tableInfo)) {
-      this.forms[_tableKey] = new FormGroup({});
-    }
   }
   
   async ngOnInit() {
@@ -92,7 +105,20 @@ export class App implements OnInit {
       }
     ];
 
-    console.log(this.mockDataSvc.tableInfo['system.companies']);
+    for (const _key of Object.keys(this.mockDataSvc.tableInfo)) {
+      this.forms[_key] = new FormGroup({});
+      this.forms[_key].patchValue(await this.mockDataSvc.getEntity(_key));
+    }
+
+    
+    // this.customerService.getCustomersLarge().then((customers) => {
+
+    //   this.customers.forEach((customer) => (customer.date = new Date(<Date>customer.date)));
+    // });
+
+    
+
+   
   }
   
   onSubmit(model: any) {
@@ -103,6 +129,19 @@ export class App implements OnInit {
     const expanded = !this.areAllItemsExpanded();
     this.items = this.toggleAllRecursive(this.items, expanded);
   }
+
+  // table
+
+  customers!: any[];
+  representatives!: any[];
+  statuses!: any[];
+  loading: boolean = true;
+  activityValues: number[] = [0, 100];
+
+
+
+
+  // private
   
   private toggleAllRecursive(items: MenuItem[], expanded: boolean): MenuItem[] {
     return items.map((menuItem) => {

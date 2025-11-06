@@ -1,29 +1,49 @@
 
 <div id="app">
-  <div id="menu" class="bg-primary-100 text-white">
+  <!-- <div id="menu" class="bg-primary-100 text-white">
     <div id="logo">ElvisFO</div>
 
     <p-scrollpanel [style]="{ width: '100%', height: 'calc(100vh - 128px)' }">
-      <!-- <p-menu [model]="items" /> -->
       <div class="card flex justify-center px-2 py-0">
-        <!-- <p-panelmenu [model]="items" class="w-full md:w-80" /> -->
         <p-panelmenu [model]="items" class="w-full" />
       </div>
     </p-scrollpanel>
 
-  </div>
+  </div> -->
   
   <div id="content" class="bg-primary-200">
 
-    @for (_table of this.mockDataSvc.tableInfoArray; track $index) {
-      <p-card [header]="_table.name">
-        <app-entity-form-builder [hostId]="_table.name"></app-entity-form-builder>
-        <p-divider />
-        <form [formGroup]="forms[_table.name]">
-          <formly-form [form]="forms[_table.name]" [fields]="this.mockDataSvc.tableInfo[_table.name]?.formSpec || []" [model]="{}"></formly-form>
-        </form>
-      </p-card>
-    }
+    <p-card>
+      <app-entity-table hostId="system.devices"></app-entity-table>
+    </p-card>
+
+    <p-card [header]="">
+      @for (_table of this.mockDataSvc.tableInfoArray; track $index) {
+        <p-accordion [multiple]="true">
+          <p-accordion-panel value="0">
+            <p-accordion-header>{{_table.name}}</p-accordion-header>
+            <p-accordion-content>
+              <p-tabs value="0">
+                <p-tablist>
+                  <p-tab value="0">Form</p-tab>
+                  <p-tab value="1">Form Builder</p-tab>
+                </p-tablist>
+                <p-tabpanels>
+                  <p-tabpanel value="0">
+                    <form [formGroup]="forms[_table.name]">
+                      <formly-form [form]="forms[_table.name]" [fields]="this.mockDataSvc.tableInfo[_table.name]?.formSpec || []" [model]="{}"></formly-form>
+                    </form>
+                  </p-tabpanel>
+                  <p-tabpanel value="1">
+                    <app-entity-form-builder [hostId]="_table.name"></app-entity-form-builder>
+                  </p-tabpanel>
+                </p-tabpanels>
+              </p-tabs>
+            </p-accordion-content>
+          </p-accordion-panel>
+        </p-accordion>
+      }
+    </p-card>
  
     <router-outlet />
   </div>

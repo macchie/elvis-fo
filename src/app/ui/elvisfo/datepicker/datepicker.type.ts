@@ -19,6 +19,7 @@ interface DatepickerProps extends FormlyFieldProps {
   monthNavigator: boolean;
   yearNavigator: boolean;
   yearRange: string;
+  readonly?: boolean;
 }
 
 export interface FormlyDatepickerFieldConfig extends FormlyFieldConfig<DatepickerProps> {
@@ -28,11 +29,19 @@ export interface FormlyDatepickerFieldConfig extends FormlyFieldConfig<Datepicke
 @Component({
   selector: 'formly-field-primeng-datepicker',
   template: `
-    <p-datepicker 
-      [formControl]="formControl"
-      [formlyAttributes]="field" 
-      [timeOnly]="true"
-    />
+    @if (!props.readonly) {
+      <p-datepicker 
+        fluid
+        [formControl]="formControl"
+        [formlyAttributes]="field" 
+        [placeholder]="props.placeholder"
+        [showTime]="true"
+      />
+    }
+
+    @if (props.readonly) {
+      <small>{{formControl.value | date:'medium'}}</small>
+    }
   <!-- [defaultDate]="props.defaultDate"
   [dateFormat]="props.dateFormat"
   [hourFormat]="props.hourFormat"
@@ -46,11 +55,7 @@ export interface FormlyDatepickerFieldConfig extends FormlyFieldConfig<Datepicke
   [inline]="props.inline"
   [readonlyInput]="props.readonlyInput"
   [touchUI]="props.touchUI"
-  
-  [placeholder]="props.placeholder"
-  [formControl]="formControl"
-  [formlyAttributes]="field" -->
-    <!-- [monthNavigator]="props.monthNavigator"
+  <!-- [monthNavigator]="props.monthNavigator"
     [yearNavigator]="props.yearNavigator"
     [yearRange]="props.yearRange" -->
   `,
@@ -58,6 +63,11 @@ export interface FormlyDatepickerFieldConfig extends FormlyFieldConfig<Datepicke
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormlyFieldDatepicker extends FieldType<FieldTypeConfig<DatepickerProps>> {
+
+  constructor( ) {
+    super();
+  }
+
   override defaultOptions?: Partial<FieldTypeConfig<DatepickerProps>> = {
     // props: {
     //   numberOfMonths: 1,

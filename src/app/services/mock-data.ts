@@ -44,11 +44,12 @@ export interface TableInfo {
 export class MockData {
 
   public TABLES = [
+    'system.store',
+    'system.users',
     'system.companies',
     'system.logos',
-    'system.store',
     'system.store_device_types',
-    'system.devices'
+    'system.devices',
   ]
 
   SERVER_HOST = 'beta.elvispos.com';
@@ -87,6 +88,32 @@ export class MockData {
     }
 
     console.log(`Loaded Form Definitions: ${Object.keys(_formSpecsCount).length}x`);
+  }
+
+  async getEntities(_table: string): Promise<any[]> {
+    const query = `SELECT * FROM ${_table} LIMIT 100`;
+
+    try {
+      const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
+      console.log(`Found Entities for ${_table}:`, _resp);
+      return _resp;
+    } catch (error) {
+      console.warn('Error fetching Entities:', error);
+      return [];
+    }
+  }
+
+  async getEntity(_table: string): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
+    const query = `SELECT * FROM ${_table} LIMIT 1`;
+
+    try {
+      const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
+      console.log(`Found Entity for ${_table}:`, _resp);
+      return _resp[0];
+    } catch (error) {
+      console.warn('Error fetching form definition:', error);
+      return [];
+    }
   }
 
   async getTableDefinition(schemaName: string, tableName: string): Promise<any> {

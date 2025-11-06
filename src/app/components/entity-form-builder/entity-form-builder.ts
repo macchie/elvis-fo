@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { Form, FormsModule } from '@angular/forms';
-import { FormlyFieldConfig } from '@ngx-formly/core';
+import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { MockData, TableColumnInfo } from '../../services/mock-data';
-import { InputText, InputTextModule } from 'primeng/inputtext';
+import { InputTextModule } from 'primeng/inputtext';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { TooltipModule } from 'primeng/tooltip';
 import { Popover, PopoverModule } from 'primeng/popover';
@@ -16,6 +15,10 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { ButtonGroupModule } from 'primeng/buttongroup';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { Drawer, DrawerModule } from 'primeng/drawer';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+
 
 export const FieldType = {
   INPUT: { code: 'input', name: 'Text Input' },
@@ -45,7 +48,10 @@ export const FieldType = {
     SelectButtonModule,
     FloatLabelModule,
     ToggleSwitchModule,
-    ButtonGroupModule
+    ButtonGroupModule,
+    MultiSelectModule,
+    DrawerModule,
+    AutoCompleteModule,
   ],
   templateUrl: './entity-form-builder.html',
   styleUrl: './entity-form-builder.css',
@@ -56,8 +62,10 @@ export class EntityFormBuilder implements OnInit {
 
   public _formSpec: any[] = [];
   public _currentFieldIdx: number = -1;
+  public _showDrawer: boolean = false;
 
   @ViewChild('editFieldPopover') editFieldPopover!: Popover;
+  @ViewChild('editFieldDrawer') editFieldDrawer!: Drawer;
   @ViewChild('contextMenu', { static: false }) contextMenu!: ContextMenu;
 
   fieldContextMenuItems: any[] = [];
@@ -71,6 +79,11 @@ export class EntityFormBuilder implements OnInit {
 
   fieldList: TableColumnInfo[] = [];
   fieldTypes: { code: string, name: string }[] = [];
+
+  onChangeTypes: any[] = [
+    { label: 'Do Nothing', value: 'NONE' },
+    { label: 'Clear Fields', value: 'CLEAR_FIELDS' },
+  ];
 
   constructor(
     public mockDataSvc: MockData
@@ -132,7 +145,9 @@ export class EntityFormBuilder implements OnInit {
       this._formSpec[index].props.fromField = this._formSpec[index].key;
     }
 
-    this.editFieldPopover.show(event);
+    // this.editFieldPopover.show(event);
+    // this.editFieldDrawer.show();
+    this._showDrawer = true;
   }
 
   onRemoveField(index: number, event: any) {
@@ -172,8 +187,25 @@ export class EntityFormBuilder implements OnInit {
       if (!_spec.props.label || _spec.props.label.trim() === '') {
         _spec.props.label = _spec.key;
       }
+      delete _spec['id'];
     }
     this.mockDataSvc.onSaveFormDefinition(this.hostId!, this._formSpec);
+  }
+
+  getProductLabel(product: any): string {
+    if (typeof product === 'string') {
+        return product;
+    }
+
+    return product?.name || '';
+  }
+
+  getProductValue(product: any): any {
+    console.log('getProductValue called with:', product);
+
+    if (typeof product === 'string') {
+      return { name: product, custom: true };
+    }
   }
 
   // private
@@ -222,12 +254,14 @@ export class EntityFormBuilder implements OnInit {
             FieldType.INTEGER,
             FieldType.BELONGS_TO,
           ];
-          if (_columnInfo.foreign_keys && _columnInfo.foreign_keys.length > 0) {
-            this._formSpec[_index].type = FieldType.BELONGS_TO.code;
-            this._formSpec[_index].props.fromEntity = this.hostId;
-            this._formSpec[_index].props.fromField = this._formSpec[_index].key;
-          } else {
-            this._formSpec[_index].type = FieldType.INTEGER.code;
+          if (!this._formSpec[_index].type || this._formSpec[_index].type === 'spacer') {
+            if (_columnInfo.foreign_keys && _columnInfo.foreign_keys.length > 0) {
+              this._formSpec[_index].type = FieldType.BELONGS_TO.code;
+              this._formSpec[_index].props.fromEntity = this.hostId;
+              this._formSpec[_index].props.fromField = this._formSpec[_index].key;
+            } else {
+              this._formSpec[_index].type = FieldType.INTEGER.code;
+            }
           }
           break;
         case 'timestamp with time zone':
@@ -236,7 +270,9 @@ export class EntityFormBuilder implements OnInit {
             FieldType.DATE,
             FieldType.INPUT,
           ];
-          this._formSpec[_index].type = FieldType.DATE.code;
+          if (!this._formSpec[_index].type || this._formSpec[_index].type === 'spacer') {
+            this._formSpec[_index].type = FieldType.DATE.code;
+          }
           break;
         default:
           this.fieldTypes = [
@@ -249,7 +285,9 @@ export class EntityFormBuilder implements OnInit {
             FieldType.DATE,
             FieldType.BELONGS_TO,
           ];
-          this._formSpec[_index].type = FieldType.INPUT.code;
+          if (!this._formSpec[_index].type) {
+            this._formSpec[_index].type = FieldType.INPUT.code;
+          }
           break;
       }
     } catch (error) {
