@@ -14,22 +14,26 @@
   <div id="content" class="bg-primary-200">
     <p-card>
       <div class="flex flex-row items-center justify-between mb-2">
-        <h2>Form</h2>
+        <h2>Debugger</h2>
         <p-select [options]="this.mockDataSvc.tableInfoArray" [(ngModel)]="_selectedTable" (ngModelChange)="onSelectedTableChange($event)" optionLabel="name" optionValue="name" placeholder="Select a Table" size="small" />
       </div>
       @if (_selectedTable) {
         <p-tabs value="0">
           <p-tablist>
-            <p-tab value="0">Form</p-tab>
-            <p-tab value="1">Form Builder</p-tab>
+            <p-tab value="0">Table</p-tab>
+            <p-tab value="1">Form</p-tab>
+            <p-tab value="2">Form Builder</p-tab>
           </p-tablist>
           <p-tabpanels>
-            <p-tabpanel value="0">
+            <p-tabpanel value="0" [style]="{ padding: 0 }">
+              <app-entity-table [hostId]="_selectedTable"></app-entity-table>
+            </p-tabpanel>
+            <p-tabpanel value="1">
               <form [formGroup]="forms[_selectedTable]">
                 <formly-form #formlyForm [form]="forms[_selectedTable]" [fields]="this.mockDataSvc.tableInfo[_selectedTable]?.formSpec || []" [model]="formModels[_selectedTable]"></formly-form>
               </form>
             </p-tabpanel>
-            <p-tabpanel value="1">
+            <p-tabpanel value="2">
               <app-entity-form-builder #formBuilder [hostId]="_selectedTable"></app-entity-form-builder>
             </p-tabpanel>
           </p-tabpanels>

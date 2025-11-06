@@ -9,6 +9,9 @@ export const CompanyFormSpec: FormlyFieldConfig[] = [
       label: 'Company Name',
       placeholder: 'ACME Ltd',
       required: true,
+    },
+    expressions: {
+      'props.disabled': '!model.sz_is_company'
     }
   },
   {

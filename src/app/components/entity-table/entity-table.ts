@@ -6,6 +6,10 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { MockData, TableColumnInfo } from '../../services/mock-data';
+import { ButtonGroupModule } from 'primeng/buttongroup';
+import { ButtonModule } from 'primeng/button';
+import { SplitButtonModule } from 'primeng/splitbutton';
+
 
 @Component({
   selector: 'app-entity-table',
@@ -15,7 +19,10 @@ import { MockData, TableColumnInfo } from '../../services/mock-data';
     IconFieldModule,
     InputIconModule,
     TagModule,
-    MultiSelectModule
+    MultiSelectModule,
+    ButtonModule,
+    ButtonGroupModule,
+    SplitButtonModule
   ],
   templateUrl: './entity-table.html',
   styleUrl: './entity-table.css',
@@ -128,7 +135,7 @@ export class EntityTable {
       
       if (this.hostId) {
         try {
-          this.fieldList = this.mockDataSvc.tableInfo[this.hostId].columns;
+          this.fieldList = this.mockDataSvc.tableInfo[this.hostId].tableSpec || this.mockDataSvc.tableInfo[this.hostId].columns;
           this.selectedColumns = this.fieldList;
         } catch (error) {
         }
