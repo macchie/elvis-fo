@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { FormlyFieldConfig } from '@ngx-formly/core';
-import { CompanyTableSpec } from './mock/company-table.mock';
+import { CompanyTableSpec, TableSpec } from './mock/company-table.mock';
 
 export enum RemoteLookupCommand {
   CMD_FREE_QUERY_REMOTE = 1000,
@@ -38,7 +38,7 @@ export interface TableInfo {
   primary_key: string;
   columns: TableColumnInfo[];
   formSpec?: FormlyFieldConfig[];
-  tableSpec?: TableColumnInfo[];
+  tableSpec?: TableSpec;
 }
 
 @Injectable({

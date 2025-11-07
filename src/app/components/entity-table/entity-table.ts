@@ -9,6 +9,7 @@ import { MockData, TableColumnInfo } from '../../services/mock-data';
 import { ButtonGroupModule } from 'primeng/buttongroup';
 import { ButtonModule } from 'primeng/button';
 import { SplitButtonModule } from 'primeng/splitbutton';
+import { TableSpec } from '../../services/mock/company-table.mock';
 
 
 @Component({
@@ -29,14 +30,14 @@ import { SplitButtonModule } from 'primeng/splitbutton';
 })
 export class EntityTable {
 
-   statuses = [
-    { label: 'Unqualified', value: 'unqualified' },
-    { label: 'Qualified', value: 'qualified' },
-    { label: 'New', value: 'new' },
-    { label: 'Negotiation', value: 'negotiation' },
-    { label: 'Renewal', value: 'renewal' },
-    { label: 'Proposal', value: 'proposal' }
-  ];
+  //  statuses = [
+  //   { label: 'Unqualified', value: 'unqualified' },
+  //   { label: 'Qualified', value: 'qualified' },
+  //   { label: 'New', value: 'new' },
+  //   { label: 'Negotiation', value: 'negotiation' },
+  //   { label: 'Renewal', value: 'renewal' },
+  //   { label: 'Proposal', value: 'proposal' }
+  // ];
 
   // customers = [
   //     {
@@ -90,40 +91,40 @@ export class EntityTable {
     //   { name: 'Xuxue Feng', image: 'xuxuefeng.png' }
     // ];
 
-    loading = true;
+    // clear(table: Table) {
+    //   table.clear();
+    // }
 
-    clear(table: Table) {
-      table.clear();
-    }
+    // getSeverity(status: string) {
+    //     switch (status) {
+    //         case 'unqualified':
+    //             return 'danger';
 
-    getSeverity(status: string) {
-        switch (status) {
-            case 'unqualified':
-                return 'danger';
+    //         case 'qualified':
+    //             return 'success';
 
-            case 'qualified':
-                return 'success';
+    //         case 'new':
+    //             return 'info';
 
-            case 'new':
-                return 'info';
+    //         case 'negotiation':
+    //             return 'warn';
 
-            case 'negotiation':
-                return 'warn';
-
-            default:
-                return null;
-        }
-    }
+    //         default:
+    //             return null;
+    //     }
+    // }
 
     // real
     
     @ViewChild('entityTable') entityTable!: Table;
 
     @Input() hostId?: string;
-    fieldList: TableColumnInfo[] = [];
-    selectedColumns!: TableColumnInfo[];
+    tableSpec!: TableSpec;
+    loading: boolean = true;
 
     data: any[] = [];
+
+    editMode: boolean = false;
 
     constructor(
       public mockDataSvc: MockData
@@ -135,8 +136,8 @@ export class EntityTable {
       
       if (this.hostId) {
         try {
-          this.fieldList = this.mockDataSvc.tableInfo[this.hostId].tableSpec || this.mockDataSvc.tableInfo[this.hostId].columns;
-          this.selectedColumns = this.fieldList;
+          this.tableSpec = this.mockDataSvc.tableInfo[this.hostId].tableSpec!;
+          // this.selectedColumns = this.fieldList;
         } catch (error) {
         }
         console.log(`Table Column Info for Host ID ${this.hostId}:`, this.mockDataSvc.tableInfo[this.hostId]);
@@ -146,7 +147,11 @@ export class EntityTable {
       // this.entityTable.value = this.data;
       this.loading = false;
 
-      console.log('EntityTable Fields:', this.fieldList);
+      console.log('EntityTable Spec:', this.tableSpec);
+    }
+
+    onToggleEdit() {
+      this.editMode = !this.editMode;
     }
 
 }
