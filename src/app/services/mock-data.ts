@@ -47,6 +47,7 @@ export interface TableInfo {
 export class MockData {
 
   public TABLES = [
+    'system.velocity_codes',
     'auth.user',
     'elvispos.departments',
     'system.store',

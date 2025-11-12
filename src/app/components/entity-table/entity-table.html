@@ -45,12 +45,13 @@
 
           <div class="flex flex-row items-center justify-between">
             @if (_col.sortable) {
-              <p-sortIcon [field]="_col.key" />
-            }
-            <span>{{_col.name}}</span>
-            @if (editMode) {
-              <br>
-              <p-button outlined size="small" icon="pi pi-cog"></p-button>
+              <div class="flex flex-row items-center gap-2">
+                <p-sortIcon [field]="_col.key" />
+                <span>{{_col.name}}</span>
+              </div>
+              @if (editMode) {
+                <p-button text size="small" icon="pi pi-cog" severity="info"></p-button>
+              }
             }
           </div>
 
@@ -60,8 +61,8 @@
         </th>
       }
       @if (editMode) {
-        <th style="border-left: 1px solid rgba(0,0,0,.2); width: 50px;" pFrozenColumn alignFrozen="right">
-          <p-button outlined size="small" icon="pi pi-plus"></p-button>
+        <th style="border-left: 1px solid rgba(0,0,0,.2); width: 50px;" pFrozenColumn alignFrozen="right" severity="info">
+          <p-button text size="small" icon="pi pi-plus"></p-button>
         </th>
       }
     </tr>
@@ -121,10 +122,10 @@
     <tr>
       <td pFrozenColumn class="flex flex-row items-center justify-end" style="border-right: 1px solid rgba(0,0,0,.2);">
         <p-buttongroup>
-          <p-button outlined size="small" icon="pi pi-eye"  />
-          <p-button outlined size="small" icon="pi pi-pen-to-square"  />
-          <p-button outlined size="small" icon="pi pi-clone" />
-          <p-button outlined size="small" icon="pi pi-trash" severity="danger" />
+          <p-button text size="small" icon="pi pi-eye"  />
+          <p-button text size="small" icon="pi pi-pen-to-square"  />
+          <p-button text size="small" icon="pi pi-clone" />
+          <p-button text size="small" icon="pi pi-trash" severity="danger" />
         </p-buttongroup>
       </td>
       @for (_col of this.tableSpec.columnsSpec; track _col.field) {
