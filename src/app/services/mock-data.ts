@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { FormlyFieldConfig } from '@ngx-formly/core';
-import { CompanyTableSpec, TableSpec } from './mock/company-table.mock';
+import { TableColumnSpec, TableSpec } from '../interfaces/table-spec.interface';
+import { PagedResult } from './api-service';
+import { Observable } from 'rxjs';
 
 export enum RemoteLookupCommand {
   CMD_FREE_QUERY_REMOTE = 1000,
@@ -38,7 +40,6 @@ export interface TableInfo {
   primary_key: string;
   columns: TableColumnInfo[];
   formSpec?: FormlyFieldConfig[];
-  tableSpec?: TableSpec;
 }
 
 @Injectable({
@@ -56,11 +57,13 @@ export class MockData {
     'system.logos',
     'system.store_device_types',
     'system.devices',
+    'elvispos.barcode_price_new'
   ]
 
   SERVER_HOST = 'beta.elvispos.com';
 
   tableInfo: { [key: string]: TableInfo; } = {};
+  tableSpecs: { [key: string]: TableSpec; } = {};
 
   get tableInfoArray(): TableInfo[] {
     return Object.values(this.tableInfo);
@@ -93,17 +96,65 @@ export class MockData {
       this.tableInfo[_spec.host_id].formSpec = _spec.data;
       _formSpecsCount++;
     }
-
-    this.tableInfo['system.companies'].tableSpec = CompanyTableSpec;
+    
+    for (const _table of this.TABLES) {
+      if (!this.tableSpecs[_table]) {
+        this.tableSpecs[_table] = this.createSpecFromTableInfo(this.tableInfo[_table]);
+      }
+    }
 
     console.timeEnd('MockData Load');
 
     console.log(`Loaded Form Definitions: ${Object.keys(_formSpecsCount).length}x`);
   }
 
+  createSpecFromTableInfo(_tableInfo: TableInfo): TableSpec {
+    const _spec: TableSpec = {
+      rows: 15,
+      rowsPerPageOptions: [15, 30, 50],
+      sortMode: 'single',
+      columns: [],
+      defaultSortField: _tableInfo.primary_key.split(', ')[0] || undefined,
+    };
+
+    for (const _col of _tableInfo.columns) {
+      const _colSpec: TableColumnSpec = {
+        field: _col.name,
+        header: _col.name.replace(/(n0_|n2_|sz_|dt_|bl_|j_)/g, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+        sortable: true,
+        filterable: true,
+      }
+      
+      _tableInfo.primary_key.split(', ').includes(_col.name) ? _colSpec.isPrimaryKey = true : null;
+
+      switch (_col.type) {
+        case 'integer':
+        case 'bigint':
+        case 'numeric':
+        case 'decimal':
+          _colSpec.type = 'number';
+          break;
+        case 'date':
+        case 'timestamp without time zone':
+        case 'timestamp with time zone':
+          _colSpec.type = 'date';
+          break;
+        case 'boolean':
+          _colSpec.type = 'boolean';
+          break;
+        default:
+          _colSpec.type = 'text';
+          break;
+      }
+
+      _spec.columns.push(_colSpec);
+    }
+
+    return _spec;
+  }
+
   async getEntities(_table: string): Promise<any[]> {
-    const orderBy = this.tableInfo[_table]?.primary_key ? 
-      ` ORDER BY ${this.tableInfo[_table].primary_key} ASC ` : '';
+    const orderBy = this.tableInfo[_table]?.primary_key ? ` ORDER BY ${this.tableInfo[_table].primary_key} ASC ` : '';
     const query = `SELECT * FROM ${_table} ${orderBy} LIMIT 100`;
 
     try {
@@ -117,8 +168,7 @@ export class MockData {
   }
 
   async getEntity(_table: string): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
-    const orderBy = this.tableInfo[_table]?.primary_key ? 
-      ` ORDER BY ${this.tableInfo[_table].primary_key} ASC ` : '';
+    const orderBy = this.tableInfo[_table]?.primary_key ? ` ORDER BY ${this.tableInfo[_table].primary_key} ASC ` : '';
     const query = `SELECT * FROM ${_table} ${orderBy} LIMIT 1`;
 
     try {
@@ -289,21 +339,72 @@ export class MockData {
     }
   }
 
+  fetchItems<T>(
+    schemaName: string, 
+    tableName: string,
+    offset: number,
+    limit: number,
+    sortField?: string,
+    sortOrder?: 'asc' | 'desc',
+    filterField?: string,
+    filterValue?: any
+  ): Observable<PagedResult<T>> {
+    // let params = new HttpParams()
+    //   .set('offset', offset.toString())
+    //   .set('limit', limit.toString());
+
+    // if (sortField) {
+    //   params = params.set('sortField', sortField);
+    // }
+    // if (sortOrder) {
+    //   params = params.set('sortOrder', sortOrder);
+    // }
+    // if (filterField && filterValue != null) {
+    //   params = params.set('filterField', filterField);
+    //   params = params.set('filterValue', filterValue.toString());
+    // }
+
+    const _query = `
+      WITH
+        paged AS (
+          SELECT
+            it.*
+          FROM
+            ${schemaName}.${tableName} it
+          ${ sortField ? `ORDER BY it.${sortField} ${sortOrder?.toUpperCase()}` : '' }
+          LIMIT ${limit} 
+          OFFSET ${offset}
+        )
+      SELECT
+        json_build_object(
+          'data',  (SELECT json_agg(row_to_json(p)) FROM paged p),
+          'total', (SELECT count(*) FROM ${schemaName}.${tableName})
+        ) AS result;
+    `;
+
+    console.log('Generated Query:', _query);
+    // WHERE
+    //   (:filter_status IS NULL OR it.status = :filter_status)
+    //   AND (:filter_search IS NULL OR it.name ILIKE '%' || :filter_search || '%')
+    // ORDER BY
+    //   CASE WHEN :sort_field = 'name'        AND :sort_order = 'asc'  THEN it.name END        ASC,
+    //   CASE WHEN :sort_field = 'name'        AND :sort_order = 'desc' THEN it.name END        DESC,
+    //   CASE WHEN :sort_field = 'created_at'  AND :sort_order = 'asc'  THEN it.created_at END  ASC,
+    //   CASE WHEN :sort_field = 'created_at'  AND :sort_order = 'desc' THEN it.created_at END  DESC,
+    //   it.id  -- fallback
+
+    return this.http.post<PagedResult<T>>(`http://${this.SERVER_HOST}:7392/api/db-operations/remote-lookup`, {
+      request: {
+        query: _query,
+        command: RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY
+      }
+    })
+  }
+
   
   async execute(command: RemoteLookupCommand, query: string, host = this.SERVER_HOST): Promise<any> {
     return new Promise(async (resolve, reject) => {
       try {
-        const options = {
-          host: host,
-          path: `/api/db-operations/remote-lookup`,
-          port: '7392',
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          }
-        };
-
         this.http.post<string>(`http://${host}:7392/api/db-operations/remote-lookup`, {
           request: {
             query: query,

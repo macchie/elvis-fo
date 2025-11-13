@@ -12,22 +12,43 @@
   </div> -->
   
   <div id="content" class="bg-primary-200">
+    <!-- <p-card header="system.companies">
+      <app-entity-table hostId="system.companies"></app-entity-table>
+    </p-card>
+
+    <p-card header="system.logos">
+      <app-entity-table hostId="system.logos"></app-entity-table>
+    </p-card>
+
+    <p-card header="system.store">
+      <app-entity-table hostId="system.store"></app-entity-table>
+    </p-card> -->
+
+    <p-card header="system.velocity_codes">
+      <app-entity-table hostId="system.velocity_codes"></app-entity-table>
+    </p-card>
+
+    <p-card header="elvispos.barcode_price_new">
+      <app-entity-table hostId="elvispos.barcode_price_new"></app-entity-table>
+    </p-card>
+
     <p-card>
       <div class="flex flex-row items-center justify-between mb-2">
         <h2>Debugger</h2>
         <p-select [options]="this.mockDataSvc.tableInfoArray" [(ngModel)]="_selectedTable" (ngModelChange)="onSelectedTableChange($event)" optionLabel="name" optionValue="name" placeholder="Select a Table" size="small" />
       </div>
+      
       @if (_selectedTable) {
-        <p-tabs value="1">
+        <p-tabs value="0">
           <p-tablist>
-            <!-- <p-tab value="0">Table</p-tab> -->
+            <p-tab value="0">Table</p-tab>
             <p-tab value="1">Form</p-tab>
             <p-tab value="2">Form Builder</p-tab>
           </p-tablist>
           <p-tabpanels>
-            <!-- <p-tabpanel value="0" [style]="{ padding: 0 }">
+            <p-tabpanel value="0" [style]="{ padding: 0 }">
               <app-entity-table [hostId]="_selectedTable"></app-entity-table>
-            </p-tabpanel> -->
+            </p-tabpanel>
             <p-tabpanel value="1">
               <form [formGroup]="forms[_selectedTable]">
                 <formly-form #formlyForm [form]="forms[_selectedTable]" [fields]="this.mockDataSvc.tableInfo[_selectedTable]?.formSpec || []" [model]="formModels[_selectedTable]"></formly-form>

@@ -21,6 +21,7 @@ import { TagModule } from 'primeng/tag';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { EntityTable } from './components/entity-table/entity-table';
 import { SelectModule } from 'primeng/select';
+import { PanelModule } from 'primeng/panel';
 
 
 @Component({
@@ -46,7 +47,8 @@ import { SelectModule } from 'primeng/select';
     TagModule,
     MultiSelectModule,
     EntityTable,
-    SelectModule
+    SelectModule,
+    PanelModule
 ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
@@ -65,7 +67,8 @@ export class App implements OnInit {
 
   formModels: { [key: string]: any } = {};
 
-  _selectedTable?: string;
+  _selectedTable!: string;
+  
   async onSelectedTableChange(_event: any) {
     if (!this._selectedTable) {
       return;

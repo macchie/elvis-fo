@@ -1,175 +1,296 @@
-<div class="flex flex-row items-center justify-between m-4 p-0">
-  <p-buttongroup>
-    <p-button size="small" icon="pi pi-pen-to-square" [label]="editMode ? 'Exit editing Mode' : 'Edit'" [severity]="editMode ? 'danger' : 'warn'" (click)="onToggleEdit()" />
-  </p-buttongroup>
+<!-- my-lazy-table.component.html -->
+<!-- <div class="p-grid p-align-end p-mb-2">
+  <div class="p-col-12 p-md-4">
+    <label for="filterName">Filter by Descr</label>
+    <input id="filterName" type="text" pInputText [(ngModel)]="filterValue" placeholder="Enter name…" />
+  </div>
+  <div class="p-col-12 p-md-2">
+    <button pButton type="button" label="Apply Filter" (click)="onFilter()"></button>
+  </div>
+</div> -->
 
+<div class="flex flex-row items-center justify-end m-4 p-0">
   <div class="flex flex-row gap-4">
     <p-button size="small" icon="pi pi-file-export" label="Export" />
     <p-button size="small" icon="pi pi-plus" label="Add New" severity="info" />
   </div>
 </div>
 
-<p-table 
-  #entityTable stripedRows showGridlines dataKey="key"
-  [value]="data" [rows]="10" [columns]="tableSpec.columnsSpec" 
-  [reorderableColumns]="editMode"
+<p-table #table 
   size="small"
-  [rowsPerPageOptions]="[10, 20, 50, 100]" 
+  stripedRows
+  showGridlines
+  [value]="items" 
+  [lazy]="true" 
+  (onLazyLoad)="loadItems($event)" 
+  [paginator]="true" 
+  [rows]="tableSpec.rows"
+  [sortField]="tableSpec.defaultSortField"
+  [rowsPerPageOptions]="tableSpec.rowsPerPageOptions" 
+  [totalRecords]="totalRecords" 
   [loading]="loading" 
-  [paginator]="true"
-  [tableStyle]="{ 'min-width': '100%' }"
-  [scrollable]="true"
-  >
-  <!-- [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']" -->
-  <!-- <ng-template #caption>
-            <div class="flex">
-              <p-iconfield iconPosition="left" class="ml-auto">
-                <p-inputicon>
-                  <i class="pi pi-search"></i>
-                </p-inputicon>
-                <input pInputText type="text" (input)="dt2.filterGlobal($event.target.value, 'contains')"
-                  placeholder="Search keyword" />
-              </p-iconfield>
-            </div>
-          </ng-template> -->
-  <!-- <ng-template #caption>
-    <p-multiselect display="chip" [options]="cols" [(ngModel)]="selectedColumns" optionLabel="header"
-      selectedItemsLabel="{0} columns selected" [style]="{ 'min-width': '200px' }" placeholder="Choose Columns" />
-  </ng-template> -->
-  <ng-template #header let-columns>
+  [sortMode]="'single'"
+>
+  <ng-template pTemplate="header">
     <tr>
-      <th style="border-right: 1px solid rgba(0,0,0,.2); width: 50px;" pFrozenColumn>&nbsp;</th>
-      @for (_col of columns; track _col.name) {
-        <!-- <th *ngFor="let col of fieldList" pReorderableColumn>{{col.name}}</th> -->
-        <th pReorderableColumn [pSortableColumn]="_col.key">
-
+      <th style="border-right: 1px solid rgba(0,0,0,.2); width: 50px; background: white;" pFrozenColumn>
+        <p-button fluid text size="small" icon="pi pi-pen-to-square" label="Edit Table" severity="info" (click)="onEditTable()" />
+      </th>
+      @for (col of tableSpec.columns; track col.field) {
+        <th [pSortableColumn]="col.field">
           <div class="flex flex-row items-center justify-between">
-            @if (_col.sortable) {
-              <div class="flex flex-row items-center gap-2">
-                <p-sortIcon [field]="_col.key" />
-                <span>{{_col.name}}</span>
-              </div>
-              @if (editMode) {
-                <p-button text size="small" icon="pi pi-cog" severity="info"></p-button>
-              }
-            }
-          </div>
+            <div class="flex flex-row items-center gap-2">
+              <!-- @if (_col.sortable) {
+              } -->
+              <p-sortIcon [field]="col.field" />
+              <span style="white-space: pre;">{{col.header}}</span>
+            </div>
 
-          @if (_col.filterable) {
-            <p-columnFilter type="text" [field]="_col.name" placeholder="Type to Search" ariaLabel="Filter" filterOn="input"></p-columnFilter>
-          }
+            <!-- @if (editMode) {
+              <p-button text size="small" icon="pi pi-cog" severity="info"></p-button>
+            } -->
+          </div>
         </th>
       }
-      @if (editMode) {
+
+      <!-- @if (editMode) {
         <th style="border-left: 1px solid rgba(0,0,0,.2); width: 50px;" pFrozenColumn alignFrozen="right" severity="info">
           <p-button text size="small" icon="pi pi-plus"></p-button>
         </th>
-      }
+      } -->
     </tr>
   </ng-template>
-  <!-- <ng-template #header>
+  <ng-template pTemplate="body" let-item>
     <tr>
-      <th style="width:22%">Name</th>
-      <th style="width:22%">Country</th>
-      <th style="width:22%">Agent</th>
-      <th style="width:22%">Status</th>
-      <th style="width:12%">Verified</th>
-    </tr>
-    <tr>
-      <th>
-        <p-columnFilter type="text" field="name" placeholder="Type to search" ariaLabel="Filter Name"
-          filterOn="input"></p-columnFilter>
-      </th>
-      <th>
-        <p-columnFilter type="text" field="country.name" placeholder="Enter key to search"
-          ariaLabel="Filter Country"></p-columnFilter>
-      </th>
-      <th>
-        <p-columnFilter field="representative" matchMode="in" [showMenu]="false">
-          <ng-template #filter let-value let-filter="filterCallback">
-            <p-multiselect [options]="representatives" placeholder="Any" (onChange)="filter($event.value)"
-              optionLabel="name" style="min-width: 14rem" [panelStyle]="{ minWidth: '16rem' }">
-              <ng-template let-option #item>
-                <div class="flex items-center gap-2">
-                  <img [alt]="option.label"
-                    src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}"
-                    style="width: 32px" />
-                  <span>{{ option.name }}</span>
-                </div>
-              </ng-template>
-            </p-multiselect>
-          </ng-template>
-        </p-columnFilter>
-      </th>
-      <th>
-        <p-columnFilter field="status" matchMode="equals" [showMenu]="false">
-          <ng-template #filter let-value let-filter="filterCallback">
-            <p-select [(ngModel)]="value" [options]="statuses" (onChange)="filter($event.value)"
-                      placeholder="Select One" [showClear]="true" style="min-width: 12rem">
-                      <ng-template let-option #item>
-                        <p-tag [value]="option.value" [severity]="getSeverity(option.value)" />
-                      </ng-template>
-                    </p-select>
-          </ng-template>
-        </p-columnFilter>
-      </th>
-      <th>
-        <p-columnFilter type="boolean" field="verified"></p-columnFilter>
-      </th>
-    </tr>
-  </ng-template> -->
-  <ng-template #body let-dataEntry>
-    <tr>
-      <td pFrozenColumn class="flex flex-row items-center justify-end" style="border-right: 1px solid rgba(0,0,0,.2);">
+      <td pFrozenColumn class="flex flex-row items-center justify-end" style="border-right: 1px solid rgba(0,0,0,.2); background: white;">
         <p-buttongroup>
-          <p-button text size="small" icon="pi pi-eye"  />
-          <p-button text size="small" icon="pi pi-pen-to-square"  />
+          <p-button text size="small" icon="pi pi-eye" />
+          <p-button text size="small" icon="pi pi-pen-to-square" />
           <p-button text size="small" icon="pi pi-clone" />
           <p-button text size="small" icon="pi pi-trash" severity="danger" />
         </p-buttongroup>
       </td>
-      @for (_col of this.tableSpec.columnsSpec; track _col.field) {
+
+      @for (col of tableSpec.columns; track col.field) {
         <td>
-          @if (_col.type == 'date') {
-            {{ dataEntry[_col.field] | date:'medium' }}
+          @if (col.isPrimaryKey) {
+            <p-tag style="width: 100%;" [severity]="col.color || 'contrast'" [value]="item[col.field]"></p-tag>
           } @else {
-            {{ dataEntry[_col.field] }}
+
+            @if (col.type === 'boolean') {
+              <p-tag style="width: 100%;" [severity]="item[col.field] ? 'success' : 'warn'" [value]="item[col.field]"></p-tag>
+            } @else if (col.type === 'date') {
+              <span style="white-space: pre;">{{ item[col.field] | date:'medium' }}</span>
+            } @else {
+              <span style="white-space: pre;">{{ item[col.field] }}</span>
+            }
           }
         </td>
       }
-      @if (editMode) {
+
+      <!-- @if (editMode) {
         <td style="border-left: 1px solid rgba(0,0,0,.2);"></td>
-      }
-      <!-- <td>
-        {{ customer.name }}
-      </td>
-      <td>
-        <div class="flex items-center gap-2">
-          <img src="https://primefaces.org/cdn/primeng/images/demo/flag/flag_placeholder.png"
-            [class]="'flag flag-' + customer.country.code" style="width: 20px" />
-          <span>{{ customer.country.name }}</span>
-        </div>
-      </td>
-      <td>
-        <div class="flex items-center gap-2">
-          <img [alt]="customer.representative.name"
-            src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ customer.representative.image }}" width="32"
-            style="vertical-align: middle" />
-          <span>{{ customer.representative.name }}</span>
-        </div>
-      </td>
-      <td>
-        <p-tag [value]="customer.status" [severity]="getSeverity(customer.status)" />
-      </td>
-      <td>
-        <i class="pi"
-          [ngClass]="{ 'text-green-500 pi-check-circle': customer.verified, 'text-red-500 pi-times-circle': !customer.verified }"></i>
-      </td> -->
+        } -->
     </tr>
   </ng-template>
-  <ng-template #emptymessage>
+  <ng-template pTemplate="footer">
     <tr>
-      <td [attr.colspan]="tableSpec.columnsSpec?.length || 0">No data found.</td>
+      <td [attr.colspan]="tableSpec.columns.length">
+        Showing {{ items.length }} of {{ totalRecords }} items.
+      </td>
     </tr>
   </ng-template>
 </p-table>
+
+
+<p-drawer [(visible)]="showDrawer" #editTableDrawer header="Edit Table" position="right" styleClass="!w-full md:!w-80 lg:!w-[35rem]">
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4">
+      @for (col of tableSpec.columns; track col.field) {
+        <div class="bg-primary-100 rounded-lg p-4">
+          <div class="flex flex-row items-center justify-start gap-4 mb-8">
+            <p-tag severity="info" [value]="col.type!.substring(0,1).toUpperCase()"></p-tag>
+            <b class="text-slate-700">{{col.field}}</b>
+
+            <div class="flex flex-row items-center justify-end ml-auto">
+              <label for="isPrimaryKey" class="m-0 p-0 mr-2">Is Primary Key</label>
+              <p-toggleswitch id="isPrimaryKey" [(ngModel)]="col.isPrimaryKey" />
+            </div>
+          </div>
+
+          <div class="flex flex-row items-center justify-stretch gap-4 mb-4">
+            <p-floatlabel variant="on" class="flex-2">
+              <p-select fluid [options]="_columnTypes" optionLabel="label" optionValue="value" [(ngModel)]="col.type"/>
+              <label for="type">Column Type</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on" class="flex-3">
+              <input pInputText fluid type="text" placeholder="label" [(ngModel)]="col.header" />
+              <label for="label">Column Label</label>
+            </p-floatlabel>
+          </div>
+
+          <div class="flex flex-row items-center justify-stretch bg-white p-1 rounded-lg mb-4">
+            <p-selectbutton fluid [options]="_colors" [(ngModel)]="col.color" [disabled]="!col.isPrimaryKey">
+              <ng-template #item let-color>
+                <i class="pi pi-circle-on color-{{color}}"></i>
+              </ng-template>
+            </p-selectbutton>
+          </div>
+        </div>
+      }
+
+
+      <!-- @for (col of tableSpec.columns; track col.field) {
+        <p-fieldset [toggleable]="true" [collapsed]="true" class="">
+          <ng-template #header>
+            <div class="flex items-center gap-2">
+              <p-badge value="N"></p-badge>
+              <span class="font-bold">{{col.field}}</span>
+            </div>
+          </ng-template>
+          <p class="m-0">
+            Lorem ipsum dolor sit amet...
+          </p>
+        </p-fieldset> -->
+
+        <!-- <div class="p-2 border-round border-1 surface-border mb-2 hover:surface-hover cursor-pointer">
+          <div class="flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center gap-2">
+              <span class="font-semibold">{{col.header}}</span>
+              @if (col.isPrimaryKey) {
+                <p-tag severity="danger" value="PK"></p-tag>
+              }
+            </div>
+            <p-button text size="small" icon="pi pi-caret-right" />
+          </div>
+        </div> -->
+      
+      <!-- <div class="flex flex-row items-center justify-end mb-4">
+        <label for="readonly" class="m-0 p-0 mr-2">Read Only</label>
+        <p-toggleswitch id="readonly" class="mr-6" [(ngModel)]="_formSpec[_currentFieldIdx].props.readonly" (ngModelChange)="_formSpec[_currentFieldIdx].props.disabled = false" />
+        <label for="disabled" class="m-0 p-0 mr-2">Disabled</label>
+        <p-toggleswitch id="disabled" [(ngModel)]="_formSpec[_currentFieldIdx].props.disabled" (ngModelChange)="_formSpec[_currentFieldIdx].props.readonly = false" />
+      </div> -->
+      
+      <!-- <p-floatlabel variant="on" class="mb-2">
+        <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
+          placeholder="Select Field" [(ngModel)]="_formSpec[_currentFieldIdx].key"
+          (ngModelChange)="onChangeFieldKey(_currentFieldIdx, $event)" />
+        <label for="key">Column Name</label>
+      </p-floatlabel> -->
+  
+      <!-- @if (_formSpec[_currentFieldIdx].type != 'spacer') {
+        <p-floatlabel variant="on" class="mb-2">
+          <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name"
+            optionValue="code" placeholder="Select Field Type" [(ngModel)]="_formSpec[_currentFieldIdx].type"
+            (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)" />
+          <label for="key">Type</label>
+        </p-floatlabel>
+        <p-floatlabel variant="on" class="mb-2">
+          <input pInputText fluid type="text" placeholder="Field Label" [(ngModel)]="_formSpec[_currentFieldIdx].props.label" />
+          <label for="key">Label:</label>
+        </p-floatlabel>
+        <p-floatlabel variant="on" class="mb-2">
+          <input pInputText fluid type="text" placeholder="Field Placeholder" [(ngModel)]="_formSpec[_currentFieldIdx].props.placeholder" />
+          <label for="key">Placeholder</label>
+        </p-floatlabel>
+
+        @if (!_formSpec[_currentFieldIdx].props.readonly && !_formSpec[_currentFieldIdx].props.disabled) {
+          <span class="font-medium block mb-3">Field Validations</span>
+
+          <div class="flex flex-row items-center justify-end mb-4">
+            <label for="required" class="m-0 p-0 mr-2">Required</label>
+            <p-toggleswitch id="required" [(ngModel)]="_formSpec[_currentFieldIdx].props.required" />
+          </div>
+
+          @if (['input', 'password'].includes(_formSpec[_currentFieldIdx].type)) {
+            <div class="flex flex-row items-center justify-stretch mb-2 gap-4">
+              <p-floatlabel variant="on">
+                <input pInputText fluid type="text" placeholder="Min Length" [(ngModel)]="_formSpec[_currentFieldIdx].props.minLength" />
+                <label for="minLength">Min Length</label>
+              </p-floatlabel>
+              <p-floatlabel variant="on">
+                <input pInputText fluid type="text" placeholder="Max Length" [(ngModel)]="_formSpec[_currentFieldIdx].props.maxLength" />
+                <label for="minLength">Max Length</label>
+              </p-floatlabel>
+            </div>
+          }
+
+          @if (['integer'].includes(_formSpec[_currentFieldIdx].type)) {
+            <div class="flex flex-row items-center justify-stretch mb-2 gap-4">
+              <p-floatlabel variant="on">
+                <input pInputText fluid type="number" placeholder="Min Value" [(ngModel)]="_formSpec[_currentFieldIdx].props.min" />
+                <label for="minValue">Min Value</label>
+              </p-floatlabel>
+              <p-floatlabel variant="on">
+                <input pInputText fluid type="number" placeholder="Max Value" [(ngModel)]="_formSpec[_currentFieldIdx].props.max" />
+                <label for="maxValue">Min Value</label>
+              </p-floatlabel>
+            </div>
+          }
+
+          <p-divider />
+
+          <span class="font-medium block mb-3">Field Dependencies</span>
+          <p-floatlabel variant="on" class="mb-2">
+            <p-multiselect fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
+              [(ngModel)]="_formSpec[_currentFieldIdx].props.dependsOnFields" />
+            <label for="dependsOnFields">Depends on Fields</label>
+          </p-floatlabel>
+          <p-floatlabel variant="on" class="mb-2">
+            <p-select fluid [options]="onChangeTypes" optionLabel="label" optionValue="value"
+              [(ngModel)]="_formSpec[_currentFieldIdx].props.onChangeAction" />
+            <label for="fromEntity">On Change</label>
+          </p-floatlabel>
+          @if (_formSpec[_currentFieldIdx].props.onChangeAction == 'CLEAR_FIELDS') {
+            <p-floatlabel variant="on" class="mb-2">
+              <p-multiselect fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
+                [(ngModel)]="_formSpec[_currentFieldIdx].props.onChangeClearFields" />
+              <label for="onChangeClearFields">Fields to Clear</label>
+            </p-floatlabel>
+          }
+        }
+      } -->
+
+      <!-- @if (_formSpec[_currentFieldIdx].type == 'select') {
+        <p-autocomplete 
+          multiple [typeahead]="false" [addOnBlur]="true" 
+          placeholder="Type and click outside to add..." 
+          [optionLabel]="getProductLabel"
+          [optionValue]="getProductValue"
+          [(ngModel)]="_formSpec[_currentFieldIdx].props.options" 
+        />
+      } -->
+  
+      <!-- @if (_formSpec[_currentFieldIdx].type == 'belongs-to') {
+        <p-divider></p-divider>
+    
+        <p-floatlabel variant="on" class="mb-2">
+          <input pInputText fluid disabled type="text" placeholder="From Entity"
+            [(ngModel)]="_formSpec[_currentFieldIdx].props.fromEntity" />
+          <label for="fromEntity">From Entity</label>
+        </p-floatlabel>
+        <p-floatlabel variant="on" class="mb-2">
+          <input pInputText fluid disabled type="text" placeholder="From Field"
+            [(ngModel)]="_formSpec[_currentFieldIdx].props.fromField" />
+          <label for="fromField">From Field</label>
+        </p-floatlabel>
+        <p-floatlabel variant="on" class="mb-2">
+          <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name"
+            optionValue="name" [(ngModel)]="_formSpec[_currentFieldIdx].props.toEntity"
+            (ngModelChange)="_formSpec[_currentFieldIdx].props.toField = null" />
+          <label for="toEntity">To Entity</label>
+        </p-floatlabel>
+    
+        @if (_formSpec[_currentFieldIdx].props.toEntity) {
+          <p-floatlabel variant="on" class="mb-2">
+            <p-select fluid [disabled]="!_formSpec[_currentFieldIdx].props.toEntity"
+              [options]="mockDataSvc.tableInfo[_formSpec[_currentFieldIdx].props.toEntity].columns" [filter]="true"
+              filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="_formSpec[_currentFieldIdx].props.toField" />
+            <label for="toField">To Field</label>
+          </p-floatlabel>
+        }
+      } -->
+    </div>
+  </div>
+</p-drawer>

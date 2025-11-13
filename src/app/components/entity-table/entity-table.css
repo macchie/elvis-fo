@@ -1,0 +1,25 @@
+
+
+i.color-primary {
+  color: var(--p-slate-300);
+}
+
+i.color-contrast {
+  color: var(--p-slate-900);
+}
+
+i.color-info {
+  color: var(--p-sky-500);
+}
+
+i.color-success {
+  color: var(--p-green-500);
+}
+
+i.color-warn {
+  color: var(--p-amber-500);
+}
+
+i.color-danger {
+  color: var(--p-red-500);
+}
