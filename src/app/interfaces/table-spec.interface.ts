@@ -15,6 +15,10 @@ export interface TableColumnSpec {
 }
 
 export interface TableSpec {
+  logicalDeleteColumns?: string[];
+  disableExport?: boolean;
+  disableActions?: boolean;
+
   rows?: number;
   rowsPerPageOptions: number[];
   sortMode?: 'single' | 'multiple';

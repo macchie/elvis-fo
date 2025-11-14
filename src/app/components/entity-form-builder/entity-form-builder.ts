@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { MockData, TableColumnInfo } from '../../services/mock-data';
@@ -18,6 +18,8 @@ import { ButtonGroupModule } from 'primeng/buttongroup';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { Drawer, DrawerModule } from 'primeng/drawer';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { Subject } from 'rxjs';
+import { FormSpec } from '../../interfaces/form-spec.interface';
 
 
 export const FieldType = {
@@ -61,8 +63,10 @@ export const FieldType = {
 export class EntityFormBuilder implements OnInit {
 
   @Input() hostId?: string;
+  @Output() formSpecChange: Subject<void> = new Subject<void>();
+  @Output() formSpecSaved: Subject<void> = new Subject<void>();
 
-  public _formSpec: any[] = [];
+  public _formSpec!: FormSpec;
   public _currentFieldIdx: number = -1;
   public _showDrawer: boolean = false;
 
@@ -73,9 +77,10 @@ export class EntityFormBuilder implements OnInit {
   fieldContextMenuItems: any[] = [];
 
   stateOptions: any[] = [
-    { label: '1/3', value: 'col-span-2' },
-    { label: '1/2', value: 'col-span-3' },
-    { label: '2/3', value: 'col-span-4' },
+    { label: '1/4', value: 'col-span-3' },
+    { label: '1/3', value: 'col-span-4' },
+    { label: '1/2', value: 'col-span-6' },
+    { label: '2/3', value: 'col-span-8' },
     { label: 'Full Width', value: 'col-span-6' },
   ];
 
@@ -99,9 +104,9 @@ export class EntityFormBuilder implements OnInit {
     if (this.hostId) {
       try {
         this.fieldList = this.mockDataSvc.tableInfo[this.hostId].columns;
-        this._formSpec = JSON.parse(JSON.stringify(this.mockDataSvc.tableInfo[this.hostId].formSpec));
+        this._formSpec = JSON.parse(JSON.stringify(this.mockDataSvc.formSpecs[this.hostId] || { fields: [] }));
       } catch (error) {
-        this._formSpec = [];
+        this._formSpec = { fields: []  };
       }
       console.log(`Table Column Info for Host ID ${this.hostId}:`, this.mockDataSvc.tableInfo[this.hostId]);
     }
@@ -134,7 +139,8 @@ export class EntityFormBuilder implements OnInit {
   onAddField() {
     console.log('Add Field Clicked!');
     const _newField = this._getNewField();
-    this._formSpec.push(_newField);
+    this._formSpec.fields.push(_newField);
+    this.formSpecChange.next();
   }
 
   onEditField(index: number, event: any) {
@@ -142,9 +148,12 @@ export class EntityFormBuilder implements OnInit {
     this._currentFieldIdx = index;
     this._setFieldTypesForField(index);
 
-    if (this._formSpec[index].type === 'belongs-to') {
-      this._formSpec[index].props.fromEntity = this.hostId;
-      this._formSpec[index].props.fromField = this._formSpec[index].key;
+    if (this._formSpec.fields[index] && this._formSpec.fields[index].type === 'belongs-to') {
+      if (!this._formSpec.fields[index].props) {
+        this._formSpec.fields[index].props = {};
+      }
+      this._formSpec.fields[index].props['fromEntity'] = this.hostId;
+      this._formSpec.fields[index].props['fromField'] = this._formSpec.fields[index].key;
     }
 
     // this.editFieldPopover.show(event);
@@ -154,11 +163,11 @@ export class EntityFormBuilder implements OnInit {
 
   onRemoveField(index: number, event: any) {
     console.log('Remove Field Clicked!', index);
-    const _spec = this._formSpec[index];
+    const _spec = this._formSpec.fields[index];
     if (_spec.type !== 'spacer') {
       this._resetField(index);
     } else {
-      this._formSpec.splice(index, 1);
+      this._formSpec.fields.splice(index, 1);
     }
   }
 
@@ -172,26 +181,31 @@ export class EntityFormBuilder implements OnInit {
   onChangeFieldType(index: number, event: any) {
     console.log('Field Type Changed:', index, event);
 
-    const _field = this._formSpec[index];
+    const _field = this._formSpec.fields[index];
 
     if (_field.type == FieldType.BELONGS_TO.code) {
       // Set default props for belongs-to
-      _field.props.fromEntity = this.hostId;
-      _field.props.toEntity = '';
-      _field.props.fromField = _field.key;
-      _field.props.toField = '';
+      if (!_field.props) {
+        _field.props = {};
+      }
+      _field.props['fromEntity'] = this.hostId;
+      _field.props['toEntity'] = '';
+      _field.props['fromField'] = _field.key;
+      _field.props['toField'] = '';
     }
   } 
 
   async onSave() {
     console.log('Form Spec to Save:', this._formSpec);
-    for (const _spec of this._formSpec) {
-      if (!_spec.props.label || _spec.props.label.trim() === '') {
-        _spec.props.label = _spec.key;
+    for (const _spec of this._formSpec.fields) {
+      if (!_spec.props!.label || _spec.props!.label.trim() === '') {
+        _spec.props!.label = _spec.key as string;
       }
       delete _spec['id'];
     }
     this.mockDataSvc.onSaveFormSpec(this.hostId!, this._formSpec);
+    this.mockDataSvc.formSpecs[this.hostId!] = this._formSpec;
+    this.formSpecSaved.next();
   }
 
   getProductLabel(product: any): string {
@@ -224,17 +238,17 @@ export class EntityFormBuilder implements OnInit {
   private _addFieldBefore(index: number) {
     console.log('Add Field Before:', index);
     const _newField = this._getNewField();
-    this._formSpec.splice(index, 0, _newField);
+    this._formSpec.fields.splice(index, 0, _newField);
   }
 
   private _addFieldAfter(index: number) {
     console.log('Add Field After:', index);
     const _newField = this._getNewField();
-    this._formSpec.splice(index + 1, 0, _newField);
+    this._formSpec.fields.splice(index + 1, 0, _newField);
   }
 
   private _disableUsedFieldSpecs() {
-    const usedFieldKeys = this._formSpec.map(f => f.key);
+    const usedFieldKeys = this._formSpec.fields.map(f => f.key);
     this.fieldList = this.fieldList.map(f => ({
       ...f,
       disabled: usedFieldKeys.includes(f.name),
@@ -242,10 +256,10 @@ export class EntityFormBuilder implements OnInit {
   }
 
   private _setFieldTypesForField(_index: number) {
-    if (!this._formSpec || this._formSpec.length === 0 || !this._formSpec[_index]) return;
+    if (!this._formSpec || this._formSpec.fields.length === 0 || !this._formSpec.fields[_index]) return;
 
     try {
-      const _columnInfo = this.fieldList.find(f => f.name === this._formSpec[_index].key);
+      const _columnInfo = this.fieldList.find(f => f.name === this._formSpec.fields[_index].key);
       console.log('Column Info for field:', _columnInfo);
       
       if (!_columnInfo) throw new Error('Column info not found');
@@ -256,13 +270,13 @@ export class EntityFormBuilder implements OnInit {
             FieldType.INTEGER,
             FieldType.BELONGS_TO,
           ];
-          if (!this._formSpec[_index].type || this._formSpec[_index].type === 'spacer') {
+          if (!this._formSpec.fields[_index].type || this._formSpec.fields[_index].type === 'spacer') {
             if (_columnInfo.foreign_keys && _columnInfo.foreign_keys.length > 0) {
-              this._formSpec[_index].type = FieldType.BELONGS_TO.code;
-              this._formSpec[_index].props.fromEntity = this.hostId;
-              this._formSpec[_index].props.fromField = this._formSpec[_index].key;
+              this._formSpec.fields[_index].type = FieldType.BELONGS_TO.code;
+              this._formSpec.fields[_index].props!['fromEntity'] = this.hostId;
+              this._formSpec.fields[_index].props!['fromField'] = this._formSpec.fields[_index].key;
             } else {
-              this._formSpec[_index].type = FieldType.INTEGER.code;
+              this._formSpec.fields[_index].type = FieldType.INTEGER.code;
             }
           }
           break;
@@ -271,8 +285,8 @@ export class EntityFormBuilder implements OnInit {
             FieldType.CHECKBOX,
             FieldType.BELONGS_TO,
           ];
-          if (!this._formSpec[_index].type || this._formSpec[_index].type === 'spacer') {
-            this._formSpec[_index].type = FieldType.CHECKBOX.code;
+          if (!this._formSpec.fields[_index].type || this._formSpec.fields[_index].type === 'spacer') {
+            this._formSpec.fields[_index].type = FieldType.CHECKBOX.code;
           }
           break;
         case 'timestamp with time zone':
@@ -281,8 +295,8 @@ export class EntityFormBuilder implements OnInit {
             FieldType.DATE,
             FieldType.INPUT,
           ];
-          if (!this._formSpec[_index].type || this._formSpec[_index].type === 'spacer') {
-            this._formSpec[_index].type = FieldType.DATE.code;
+          if (!this._formSpec.fields[_index].type || this._formSpec.fields[_index].type === 'spacer') {
+            this._formSpec.fields[_index].type = FieldType.DATE.code;
           }
           break;
         default:
@@ -298,8 +312,8 @@ export class EntityFormBuilder implements OnInit {
             FieldType.BELONGS_TO,
             FieldType.HAS_MANY,
           ];
-          if (!this._formSpec[_index].type || this._formSpec[_index].type === 'spacer') {
-            this._formSpec[_index].type = FieldType.INPUT.code;
+          if (!this._formSpec.fields[_index].type || this._formSpec.fields[_index].type === 'spacer') {
+            this._formSpec.fields[_index].type = FieldType.INPUT.code;
           }
           break;
       }
@@ -309,8 +323,8 @@ export class EntityFormBuilder implements OnInit {
   }
 
   private _resetField(_index: number) {
-    if (!this._formSpec || this._formSpec.length === 0 || !this._formSpec[_index]) return;
-    this._formSpec[_index].type = 'spacer';
-    this._formSpec[_index].props = {};
+    if (!this._formSpec || this._formSpec.fields.length === 0 || !this._formSpec.fields[_index]) return;
+    this._formSpec.fields[_index].type = 'spacer';
+    this._formSpec.fields[_index].props = {};
   }
 }

@@ -1,29 +1,5 @@
 
 
-i.color-primary {
-  color: var(--p-slate-300);
-}
-
-i.color-contrast {
-  color: var(--p-slate-900);
-}
-
-i.color-info {
-  color: var(--p-sky-500);
-}
-
-i.color-success {
-  color: var(--p-green-500);
-}
-
-i.color-warn {
-  color: var(--p-amber-500);
-}
-
-i.color-danger {
-  color: var(--p-red-500);
-}
-
 span.text-bold {
   font-weight: 700 !important;
 }
@@ -34,4 +10,28 @@ span.text-underline {
 
 span.text-italic {
   font-style: italic !important;
-} 
+}
+
+span.text-primary {
+  color: var(--p-slate-300);
+}
+
+span.text-contrast {
+  color: var(--p-slate-900);
+}
+
+span.text-info {
+  color: var(--p-sky-500);
+}
+
+span.text-success {
+  color: var(--p-green-500);
+}
+
+span.text-warn {
+  color: var(--p-amber-500);
+}
+
+span.text-danger {
+  color: var(--p-red-500);
+}

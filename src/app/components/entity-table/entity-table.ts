@@ -2,32 +2,23 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, Input, ViewChild } from '@angular/core';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { MockData, TableColumnInfo } from '../../services/mock-data';
+import { MockData } from '../../services/mock-data';
 import { ButtonGroupModule } from 'primeng/buttongroup';
 import { ButtonModule } from 'primeng/button';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { PanelModule } from 'primeng/panel';
-import { TableColumnSpec, TableSpec } from '../../interfaces/table-spec.interface';
-import { APIService, PagedResult } from '../../services/api-service';
+import { TableSpec } from '../../interfaces/table-spec.interface';
 import { FormsModule } from '@angular/forms';
 import { Drawer, DrawerModule } from 'primeng/drawer';
 import { FieldsetModule } from 'primeng/fieldset';
 import { AvatarModule } from 'primeng/avatar';
-import { AccordionModule } from 'primeng/accordion';
 import { BadgeModule } from 'primeng/badge';
-import { OrderListModule } from 'primeng/orderlist';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { SelectModule } from 'primeng/select';
-import { InputTextModule } from 'primeng/inputtext';
-import { ToggleSwitchModule } from 'primeng/toggleswitch';
-import { SelectButtonModule } from 'primeng/selectbutton';
+import { ImageModule } from 'primeng/image';
 import { ToolbarModule } from 'primeng/toolbar';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
+import { EntityTableBuilder } from '../entity-table-builder/entity-table-builder';
+import { EntityForm } from '../entity-form/entity-form';
 
 
 interface Item {
@@ -44,8 +35,6 @@ interface Item {
     TableModule,
     IconFieldModule,
     InputIconModule,
-    TagModule,
-    MultiSelectModule,
     ButtonModule,
     ButtonGroupModule,
     SplitButtonModule,
@@ -53,19 +42,13 @@ interface Item {
     DrawerModule,
     FieldsetModule,
     AvatarModule,
-    AccordionModule,
     BadgeModule,
-    OrderListModule,
-    FloatLabelModule,
-    SelectModule,
-    InputTextModule,
-    ToggleSwitchModule,
-    SelectButtonModule,
+    EntityTableBuilder,
+    TagModule,
+    EntityForm,
+    ImageModule,
     ToolbarModule,
-    ConfirmDialogModule,
-    ToastModule
   ],
-  providers: [ConfirmationService, MessageService],
   templateUrl: './entity-table.html',
   styleUrl: './entity-table.css',
 })
@@ -73,15 +56,13 @@ export class EntityTable {
 
   constructor(
     public mockDataSvc: MockData,
-    private apiService: APIService,
     private cd: ChangeDetectorRef,
-    private confirmationService: ConfirmationService, 
-    private messageService: MessageService
   ) {
   }
 
   @ViewChild('table') table!: Table;
   @ViewChild('editTableDrawer') editFieldDrawer!: Drawer;
+  @ViewChild('entityForm', { static: false }) entityForm!: EntityForm;
 
   @Input() hostId!: string;
   schemaName!: string;
@@ -93,33 +74,12 @@ export class EntityTable {
   loading = false;
   filterValue: string = '';
 
-  showDrawer: boolean = false;
+  showEditTableSpecDrawer: boolean = false;
 
-  _columnTypes = [
-    { label: 'Text', value: 'text' },
-    { label: 'Number', value: 'number' },
-    { label: 'Date', value: 'date' },
-    { label: 'Boolean', value: 'boolean' },
-    { label: 'Image', value: 'image' },
-    { label: 'Relation', value: 'relation' },
-    { label: 'Barcode', value: 'barcode' },
-    { label: 'Custom', value: 'custom' },
-  ];
+  rowDrawerHeader: string = 'View Entry';
+  showRowDrawer: boolean = false;
 
-  _colors = [
-    'primary',
-    'contrast',
-    'success',
-    'info',
-    'warn',
-    'danger',
-  ];
-
-  _formatting = [
-    { value: 'text-bold', icon: 'pi pi-circle-on' },
-    { value: 'text-italic', icon: 'pi pi-align-center' },
-    { value: 'text-underline', icon: 'pi pi-minus' },
-  ];
+  _tableActions: any[] = [];
 
   ngOnInit(): void {
     if (this.hostId) {
@@ -132,6 +92,24 @@ export class EntityTable {
 
       this.tableSpec = this.mockDataSvc.tableSpecs[`${this.schemaName}.${this.tableName}`];
     }
+
+    this._tableActions = [
+      {
+        label: 'Export CSV',
+        icon: 'pi pi-file-export',
+        command: () => {
+          this.onExportCSV();
+        },
+      },
+      { separator: true, },
+      {
+        label: 'Edit Table Layout',
+        icon: 'pi pi-pen-to-square',
+        command: () => {
+          this.onEditSpec();
+        },
+      },
+    ];
   }
 
   loadItems(event: any): void {
@@ -171,43 +149,38 @@ export class EntityTable {
   }
 
   onEditSpec() {
-    this.showDrawer = true;
+    this.showEditTableSpecDrawer = true;
   }
 
-  onSaveSpec() {
-    console.log('Table Spec to Save:', this.tableSpec);
-    this.mockDataSvc.onSaveTableSpec(this.hostId!, this.tableSpec);
+  onRefresh() {
+    this.table.reset();
   }
 
-  onRemoveColumn(col: TableColumnSpec, event: Event) {
+  onViewRow(event: Event, rowData: any) {
+    this.rowDrawerHeader = 'View Entry';
+    this.entityForm.readonly = true;
+    this.entityForm.entityId = rowData[this.mockDataSvc.tableInfo[this.hostId!].primary_key];
+    this.entityForm.refreshData();
+    this.showRowDrawer = true;
+  }
 
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      message: 'Do you want to delete this Column?',
-      header: 'Danger Zone',
-      icon: 'pi pi-info-circle',
-      rejectLabel: 'Cancel',
-      rejectButtonProps: {
-        label: 'Cancel',
-        severity: 'secondary',
-        outlined: true,
-      },
-      acceptButtonProps: {
-        label: 'Delete',
-        severity: 'danger',
-      },
-      accept: () => {
-        this.messageService.add({ severity: 'success', summary: 'Confirmed', detail: 'Column deleted!' });
+  onCreateRow(event: Event) {
+    this.rowDrawerHeader = 'Create Entry';
+    this.entityForm.readonly = false;
+    this.entityForm.clearData();
+    this.showRowDrawer = true;
+  }
 
-        const idx = this.tableSpec.columns.findIndex(c => c.field === col.field);
-        if (idx !== -1) {
-          this.tableSpec.columns.splice(idx, 1);
-        }
-      },
-      reject: () => {
-        this.messageService.add({ severity: 'info', summary: 'Rejected', detail: 'You have rejected.' });
-      },
-    });
+  onEditRow(event: Event, rowData: any) {
+    this.rowDrawerHeader = 'Edit Entry';
+    this.entityForm.readonly = false;
+    this.entityForm.entityId = rowData[this.mockDataSvc.tableInfo[this.hostId!].primary_key];
+    this.entityForm.refreshData();
+    this.showRowDrawer = true;
+  }
+
+  onExportCSV() {
+    this.table.exportCSV({ allValues: true, })
   }
 
 }

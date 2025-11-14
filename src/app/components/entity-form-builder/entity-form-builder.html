@@ -1,6 +1,8 @@
 
-<div id="builder-content" #builderContent class="grid grid-cols-6 gap-4 p-2">
-  @for (_field of _formSpec; track $index;) {
+<p-contextmenu #contextMenu [model]="fieldContextMenuItems" />
+
+<div id="builder-content" #builderContent class="grid grid-cols-12 gap-4 p-2">
+  @for (_field of _formSpec.fields; track $index;) {
     <div
       #fieldSpec
       id="field-spec"
@@ -34,34 +36,34 @@
 
         @if (_field.type != 'spacer') {
           <label for="{{_field.key}}">
-            {{_field.props.label || _field.key}}
-            @if (_field.props.required) {
+            {{_field.props!.label || _field.key}}
+            @if (_field.props!.required) {
               <span class="text-red-600">*</span>
             }
           </label>
         }
   
-        @if (['input', 'integer', 'select', 'password'].includes(_field.type)) {
+        @if (_field.type === 'input' || _field.type === 'integer' || _field.type === 'select' || _field.type === 'password') {
           <input
             pInputText fluid
             [type]="_field.type === 'integer' ? 'integer' : 'text'"
             id="{{_field.key}}"
             name="{{_field.key}}"
-            placeholder="{{_field.props.placeholder}}"
+            placeholder="{{_field.props!.placeholder}}"
             disabled="true"
           />
         }
 
         @if (_field.type == 'datepicker') {
-          @if (_field.props.readonly) {
+          @if (_field.props!.readonly) {
             <small>{{'2025-03-07 04:00:00' | date:'medium'}}</small>
           } @else {
             <input
               pInputText fluid
-              [type]="_field.type === 'integer' ? 'integer' : 'text'"
+              type="text"
               id="{{_field.key}}"
               name="{{_field.key}}"
-              placeholder="{{_field.props.placeholder}}"
+              placeholder="{{_field.props!.placeholder}}"
               disabled="true"
             />
           }
@@ -70,7 +72,7 @@
         @if (_field.type == 'belongs-to') {
           <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
             <p-button disabled icon="pi pi-eye" variant="outlined" severity="info" />
-            <p-button fluid disabled class="grow" [label]="_field.props.placeholder || 'Select'" variant="outlined" severity="secondary" />
+            <p-button fluid disabled class="grow" [label]="_field.props!.placeholder || 'Select'" variant="outlined" severity="secondary" />
             <p-button disabled icon="pi pi-times" variant="outlined"
               severity="danger" />
           </p-buttongroup>
@@ -86,71 +88,71 @@
   <p-button (click)="onSave()" severity="success">Save Form</p-button>
 </div>
 
-<p-drawer [(visible)]="_showDrawer" #editFieldDrawer [header]="_formSpec[_currentFieldIdx] ? _formSpec[_currentFieldIdx].key : ''" position="right" styleClass="!w-full md:!w-80 lg:!w-[35rem]">
-  @if (_currentFieldIdx >= 0 && _formSpec[_currentFieldIdx]) {
+<p-drawer [(visible)]="_showDrawer" #editFieldDrawer [header]="_formSpec.fields[_currentFieldIdx] ? _formSpec.fields[_currentFieldIdx].key + '' : ''" position="right" styleClass="!w-full md:!w-80 lg:!w-[35rem]">
+  @if (_currentFieldIdx >= 0 && _formSpec.fields[_currentFieldIdx]) {
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-2">
         <span class="font-medium block mb-3">Field Properties</span>
         
         <div class="flex flex-row items-center justify-end mb-4">
           <label for="readonly" class="m-0 p-0 mr-2">Read Only</label>
-          <p-toggleswitch id="readonly" class="mr-6" [(ngModel)]="_formSpec[_currentFieldIdx].props.readonly" (ngModelChange)="_formSpec[_currentFieldIdx].props.disabled = false" />
+          <p-toggleswitch id="readonly" class="mr-6" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.readonly" (ngModelChange)="_formSpec.fields[_currentFieldIdx].props!.disabled = false" />
           <label for="disabled" class="m-0 p-0 mr-2">Disabled</label>
-          <p-toggleswitch id="disabled" [(ngModel)]="_formSpec[_currentFieldIdx].props.disabled" (ngModelChange)="_formSpec[_currentFieldIdx].props.readonly = false" />
+          <p-toggleswitch id="disabled" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.disabled" (ngModelChange)="_formSpec.fields[_currentFieldIdx].props!.readonly = false" />
         </div>
         
         <p-floatlabel variant="on" class="mb-2">
           <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
-            placeholder="Select Field" [(ngModel)]="_formSpec[_currentFieldIdx].key"
+            placeholder="Select Field" [(ngModel)]="_formSpec.fields[_currentFieldIdx].key"
             (ngModelChange)="onChangeFieldKey(_currentFieldIdx, $event)" />
           <label for="key">Column Name</label>
         </p-floatlabel>
     
-        @if (_formSpec[_currentFieldIdx].type != 'spacer') {
+        @if (_formSpec.fields[_currentFieldIdx].type != 'spacer') {
           <p-floatlabel variant="on" class="mb-2">
             <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name"
-              optionValue="code" placeholder="Select Field Type" [(ngModel)]="_formSpec[_currentFieldIdx].type"
+              optionValue="code" placeholder="Select Field Type" [(ngModel)]="_formSpec.fields[_currentFieldIdx].type"
               (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)" />
             <label for="key">Type</label>
           </p-floatlabel>
           <p-floatlabel variant="on" class="mb-2">
-            <input pInputText fluid type="text" placeholder="Field Label" [(ngModel)]="_formSpec[_currentFieldIdx].props.label" />
+            <input pInputText fluid type="text" placeholder="Field Label" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.label" />
             <label for="key">Label:</label>
           </p-floatlabel>
           <p-floatlabel variant="on" class="mb-2">
-            <input pInputText fluid type="text" placeholder="Field Placeholder" [(ngModel)]="_formSpec[_currentFieldIdx].props.placeholder" />
+            <input pInputText fluid type="text" placeholder="Field Placeholder" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.placeholder" />
             <label for="key">Placeholder</label>
           </p-floatlabel>
 
-          @if (!_formSpec[_currentFieldIdx].props.readonly && !_formSpec[_currentFieldIdx].props.disabled) {
+          @if (!_formSpec.fields[_currentFieldIdx].props!.readonly && !_formSpec.fields[_currentFieldIdx].props!.disabled) {
             <span class="font-medium block mb-3">Field Validations</span>
 
             <div class="flex flex-row items-center justify-end mb-4">
               <label for="required" class="m-0 p-0 mr-2">Required</label>
-              <p-toggleswitch id="required" [(ngModel)]="_formSpec[_currentFieldIdx].props.required" />
+              <p-toggleswitch id="required" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.required" />
             </div>
 
-            @if (['input', 'password'].includes(_formSpec[_currentFieldIdx].type)) {
+            @if (_formSpec.fields[_currentFieldIdx].type == 'input' || _formSpec.fields[_currentFieldIdx].type == 'password') {
               <div class="flex flex-row items-center justify-stretch mb-2 gap-4">
                 <p-floatlabel variant="on">
-                  <input pInputText fluid type="text" placeholder="Min Length" [(ngModel)]="_formSpec[_currentFieldIdx].props.minLength" />
+                  <input pInputText fluid type="text" placeholder="Min Length" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.minLength" />
                   <label for="minLength">Min Length</label>
                 </p-floatlabel>
                 <p-floatlabel variant="on">
-                  <input pInputText fluid type="text" placeholder="Max Length" [(ngModel)]="_formSpec[_currentFieldIdx].props.maxLength" />
+                  <input pInputText fluid type="text" placeholder="Max Length" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.maxLength" />
                   <label for="minLength">Max Length</label>
                 </p-floatlabel>
               </div>
             }
 
-            @if (['integer'].includes(_formSpec[_currentFieldIdx].type)) {
+            @if (_formSpec.fields[_currentFieldIdx].type == 'integer') {
               <div class="flex flex-row items-center justify-stretch mb-2 gap-4">
                 <p-floatlabel variant="on">
-                  <input pInputText fluid type="number" placeholder="Min Value" [(ngModel)]="_formSpec[_currentFieldIdx].props.min" />
+                  <input pInputText fluid type="number" placeholder="Min Value" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.min" />
                   <label for="minValue">Min Value</label>
                 </p-floatlabel>
                 <p-floatlabel variant="on">
-                  <input pInputText fluid type="number" placeholder="Max Value" [(ngModel)]="_formSpec[_currentFieldIdx].props.max" />
+                  <input pInputText fluid type="number" placeholder="Max Value" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!.max" />
                   <label for="maxValue">Min Value</label>
                 </p-floatlabel>
               </div>
@@ -161,61 +163,63 @@
             <span class="font-medium block mb-3">Field Dependencies</span>
             <p-floatlabel variant="on" class="mb-2">
               <p-multiselect fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
-                [(ngModel)]="_formSpec[_currentFieldIdx].props.dependsOnFields" />
+                [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!['dependsOnFields']" />
               <label for="dependsOnFields">Depends on Fields</label>
             </p-floatlabel>
+
             <p-floatlabel variant="on" class="mb-2">
               <p-select fluid [options]="onChangeTypes" optionLabel="label" optionValue="value"
-                [(ngModel)]="_formSpec[_currentFieldIdx].props.onChangeAction" />
+                [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!['onChangeAction']" />
               <label for="fromEntity">On Change</label>
             </p-floatlabel>
-            @if (_formSpec[_currentFieldIdx].props.onChangeAction == 'CLEAR_FIELDS') {
+
+            @if (_formSpec.fields[_currentFieldIdx].props!['onChangeAction'] == 'CLEAR_FIELDS') {
               <p-floatlabel variant="on" class="mb-2">
                 <p-multiselect fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
-                  [(ngModel)]="_formSpec[_currentFieldIdx].props.onChangeClearFields" />
+                  [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!['onChangeClearFields']" />
                 <label for="onChangeClearFields">Fields to Clear</label>
               </p-floatlabel>
             }
           }
         }
 
-        <!-- @if (_formSpec[_currentFieldIdx].type == 'select') {
+        <!-- @if (_formSpec.fields[_currentFieldIdx].type == 'select') {
           <p-autocomplete 
             multiple [typeahead]="false" [addOnBlur]="true" 
             placeholder="Type and click outside to add..." 
             [optionLabel]="getProductLabel"
             [optionValue]="getProductValue"
-            [(ngModel)]="_formSpec[_currentFieldIdx].props.options" 
+            [(ngModel)]="_formSpec.fields[_currentFieldIdx].props.options" 
           />
         } -->
     
-        @if (_formSpec[_currentFieldIdx].type == 'belongs-to') {
+        @if (_formSpec.fields[_currentFieldIdx].type == 'belongs-to') {
           <p-divider></p-divider>
           <!-- <span class="font-medium text-surface-900 dark:text-surface-0 block mb-3">Belongs To Options</span> -->
       
           <p-floatlabel variant="on" class="mb-2">
             <input pInputText fluid disabled type="text" placeholder="From Entity"
-              [(ngModel)]="_formSpec[_currentFieldIdx].props.fromEntity" />
+              [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!['fromEntity']" />
             <label for="fromEntity">From Entity</label>
           </p-floatlabel>
           <p-floatlabel variant="on" class="mb-2">
             <input pInputText fluid disabled type="text" placeholder="From Field"
-              [(ngModel)]="_formSpec[_currentFieldIdx].props.fromField" />
+              [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!['fromField']" />
             <label for="fromField">From Field</label>
           </p-floatlabel>
           <p-floatlabel variant="on" class="mb-2">
             <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name"
-              optionValue="name" [(ngModel)]="_formSpec[_currentFieldIdx].props.toEntity"
-              (ngModelChange)="_formSpec[_currentFieldIdx].props.toField = null" />
+              optionValue="name" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!['toEntity']"
+              (ngModelChange)="_formSpec.fields[_currentFieldIdx].props!['toField'] = null" />
             <label for="toEntity">To Entity</label>
           </p-floatlabel>
       
-          @if (_formSpec[_currentFieldIdx].props.toEntity) {
+          @if (_formSpec.fields[_currentFieldIdx].props!['toEntity']) {
             <p-floatlabel variant="on" class="mb-2">
-              <p-select fluid [disabled]="!_formSpec[_currentFieldIdx].props.toEntity"
-                [options]="mockDataSvc.tableInfo[_formSpec[_currentFieldIdx].props.toEntity].columns" [filter]="true"
-                filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="_formSpec[_currentFieldIdx].props.toField" />
-              <!-- <input pInputText fluid type="text" placeholder="To Field"  [(ngModel)]="_formSpec[_currentFieldIdx].props.toField" /> -->
+              <p-select fluid [disabled]="!_formSpec.fields[_currentFieldIdx].props!['toEntity']"
+                [options]="mockDataSvc.tableInfo[_formSpec.fields[_currentFieldIdx].props!['toEntity']].columns" [filter]="true"
+                filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="_formSpec.fields[_currentFieldIdx].props!['toField']" />
+              <!-- <input pInputText fluid type="text" placeholder="To Field"  [(ngModel)]="_formSpec.fields[_currentFieldIdx].props.toField" /> -->
               <label for="toField">To Field</label>
             </p-floatlabel>
           }
@@ -225,7 +229,3 @@
   }
 </p-drawer>
 
-<p-contextmenu 
-  #contextMenu
-  [model]="fieldContextMenuItems" 
-/>

@@ -3,7 +3,6 @@ import { RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { ToastModule } from 'primeng/toast';
-import { FormlyFieldConfig, FormlyForm, FormlyFormOptions, FormlyAttributes } from "@ngx-formly/core";
 import { FormGroup, FormsModule, ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -14,7 +13,7 @@ import { EntityFormBuilder } from './components/entity-form-builder/entity-form-
 import { DividerModule } from 'primeng/divider';
 import { AccordionModule } from 'primeng/accordion';
 import { TabsModule } from 'primeng/tabs';
-import { Table, TableModule } from 'primeng/table';
+import { TableModule } from 'primeng/table';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
@@ -33,11 +32,9 @@ import { PanelModule } from 'primeng/panel';
     ScrollPanelModule,
     FormsModule,
     ReactiveFormsModule,
-    FormlyForm,
     CardModule,
     ButtonModule,
     PanelMenuModule,
-    EntityFormBuilder,
     DividerModule,
     AccordionModule,
     TabsModule,
@@ -57,32 +54,10 @@ export class App implements OnInit {
   protected readonly title = signal('elvis-fo');
   items: MenuItem[] = [] ;
 
-  forms: { [key: string]: FormGroup } = {};
-
-  @ViewChild('formlyForm', { static: false }) 
-  formlyFormComponent!: FormlyForm;
-
   @ViewChild('formBuilder', { static: false }) 
   formBuilderComponent!: EntityFormBuilder;
 
-  formModels: { [key: string]: any } = {};
-
   _selectedTable!: string;
-  
-  async onSelectedTableChange(_event: any) {
-    if (!this._selectedTable) {
-      return;
-    }
-
-    if (!this.formModels[this._selectedTable]) {
-      this.forms[this._selectedTable] = new FormGroup({});
-      this.formModels[this._selectedTable] = await this.mockDataSvc.getEntity(this._selectedTable);
-    }
-
-    console.log('Selected Table changed:', this._selectedTable);
-    this.formBuilderComponent.hostId = this._selectedTable;
-    this.formBuilderComponent.ngOnInit();
-  }
 
   constructor(
     public mockDataSvc: MockData
@@ -132,33 +107,12 @@ export class App implements OnInit {
         ]
       }
     ];
-
-    for (const _key of Object.keys(this.mockDataSvc.tableInfo)) {
-      this.forms[_key] = new FormGroup({});
-      // this.forms[_key].patchValue(await this.mockDataSvc.getEntity(_key));
-    }
-
-  }
-  
-  onSubmit(model: any) {
-    console.log(model);
   }
   
   toggleAll() {
     const expanded = !this.areAllItemsExpanded();
     this.items = this.toggleAllRecursive(this.items, expanded);
   }
-
-  // table
-
-  customers!: any[];
-  representatives!: any[];
-  statuses!: any[];
-  loading: boolean = true;
-  activityValues: number[] = [0, 100];
-
-
-
 
   // private
   

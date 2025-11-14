@@ -1,0 +1,118 @@
+<div id="entity-table-builder">
+  <div class="flex flex-row items-center justify-end mb-4">
+    <p-button size="small" icon="pi pi-save" label="Save" severity="success" (click)="onSaveSpec()" />
+  </div>
+  <p-tabs value="0">
+    <p-tablist>
+      <p-tab value="0">Options</p-tab>
+      <p-tab value="1">Columns</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="0">
+        <div class="grid grid-cols-2 gap-4 py-4">
+          <p-floatlabel variant="on" class="mb-2">
+            <input pInputText fluid type="number" placeholder="label" [max]="50" [(ngModel)]="tableSpec.rows" />
+            <label for="rows">Default Rows</label>
+          </p-floatlabel>
+          <p-floatlabel variant="on" class="mb-2">
+            <p-multiselect fluid [options]="mockDataSvc.tableInfo[hostId].columns" [filter]="true" filterBy="name"
+              optionLabel="name" optionValue="name" [(ngModel)]="tableSpec.logicalDeleteColumns" />
+            <label for="logicalDeleteColumns">Logical Delete Columns</label>
+          </p-floatlabel>
+          <p-floatlabel variant="on" class="mb-2" class="col-span-2">
+            <p-multiselect fluid [options]="mockDataSvc.tableInfo[hostId].columns" [filter]="true" filterBy="name"
+              optionLabel="name" optionValue="name" [(ngModel)]="tableSpec.logicalDeleteColumns" />
+            <label for="logicalDeleteColumns">Logical Delete Columns</label>
+          </p-floatlabel>
+          <div class="flex flex-row items-center justify-end mb-4 col-span-2">
+            <label for="disableExport" class="m-0 p-0 mr-2">Disable Export</label>
+            <p-toggleswitch id="disableExport" class="mr-6" [(ngModel)]="tableSpec.disableExport" />
+            <label for="disableActions" class="m-0 p-0 mr-2">Disable Actions</label>
+            <p-toggleswitch id="disableActions" [(ngModel)]="tableSpec.disableActions" />
+          </div>
+        </div>
+      </p-tabpanel>
+
+      <p-tabpanel value="1">
+        <div class="flex flex-col gap-4 py-4">
+          @for (col of tableSpec.columns; track col.field) {
+          <div class="bg-primary-100 rounded-lg p-4">
+            <div class="flex flex-row items-center justify-start gap-4 mb-8">
+              <p-tag severity="info" [value]="col.type!.substring(0,1).toUpperCase()"></p-tag>
+              <b class="text-slate-700">{{col.field}}</b>
+          
+              <div class="flex flex-row items-center justify-end ml-auto">
+                <label for="isPrimaryKey" class="m-0 p-0 mr-2">Hide</label>
+                <p-toggleswitch id="isPrimaryKey" [(ngModel)]="col.hidden" />
+              </div>
+          
+              <p-button text icon="pi pi-trash" severity="danger" class="ml-2" size="small"
+                (click)="onRemoveColumn(col, $event)"></p-button>
+            </div>
+          
+            <div class="flex flex-row items-center justify-stretch gap-4 mb-4">
+              <p-floatlabel variant="on" class="flex-2">
+                <p-select fluid [options]="_columnTypes" optionLabel="label" optionValue="value" [(ngModel)]="col.type"
+                  [disabled]="col.hidden" />
+                <label for="type">Column Type</label>
+              </p-floatlabel>
+              <p-floatlabel variant="on" class="flex-3">
+                <input pInputText fluid type="text" placeholder="label" [(ngModel)]="col.header" [disabled]="col.hidden" />
+                <label for="label">Column Label</label>
+              </p-floatlabel>
+            </div>
+          
+            @if (col.type === 'relation') {
+            <div class="flex flex-row items-center justify-stretch gap-4 mb-4">
+              <p-floatlabel variant="on" class="flex-1">
+                <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name"
+                  optionValue="name" [(ngModel)]="col.relationTo" [disabled]="col.hidden"
+                  (ngModelChange)="col.relationToField = undefined; col.relationToDisplayField = undefined;" />
+                <label for="toEntity">To Entity</label>
+              </p-floatlabel>
+              @if (col.relationTo) {
+              <p-floatlabel variant="on" class="flex-1">
+                <p-select fluid [disabled]="col.hidden || !col.relationTo"
+                  [options]="mockDataSvc.tableInfo[col.relationTo!].columns" [filter]="true" filterBy="name" optionLabel="name"
+                  optionValue="name" [(ngModel)]="col.relationToField" />
+                <label for="toField">To Field</label>
+              </p-floatlabel>
+              <p-floatlabel variant="on" class="flex-1">
+                <p-select fluid [disabled]="col.hidden || !col.relationTo"
+                  [options]="mockDataSvc.tableInfo[col.relationTo!].columns" [filter]="true" filterBy="name" optionLabel="name"
+                  optionValue="name" [(ngModel)]="col.relationToDisplayField" />
+                <label for="displayField">Display Field</label>
+              </p-floatlabel>
+              } @else {
+              <div class="flex-2"></div>
+              }
+            </div>
+            }
+          
+            <div class="flex flex-row items-center justify-stretch bg-white gap-4 p-2 rounded-lg">
+              @if (col.type !== 'image') {
+              <p-toggleswitch id="isPrimaryKey" [(ngModel)]="col.isPrimaryKey" [disabled]="col.hidden" />
+              }
+              <p-selectbutton class="flex-3" fluid size="small" [options]="_colors" [(ngModel)]="col.color"
+                [disabled]="col.hidden">
+                <ng-template #item let-color>
+                  <i class="pi pi-circle-on color-{{color}}"></i>
+                </ng-template>
+              </p-selectbutton>
+              <p-selectbutton class="flex-1" fluid size="small" [options]="_formatting" [(ngModel)]="col.formatting"
+                [disabled]="col.hidden" optionValue="value" [multiple]="true">
+                <ng-template #item let-formatting>
+                  <img src="assets/icons/{{formatting.icon}}.svg" />
+                </ng-template>
+              </p-selectbutton>
+            </div>
+          </div>
+          }
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</div>
+
+<p-toast position="bottom-left" />
+<p-confirmdialog />

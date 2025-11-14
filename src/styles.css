@@ -70,7 +70,7 @@ form {
   
     formly-group {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(12, minmax(0, 1fr));
       flex-wrap: wrap;
       width: 100%;
       gap: 16px;

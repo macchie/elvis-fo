@@ -4,6 +4,7 @@ import { FormlyFieldConfig } from '@ngx-formly/core';
 import { TableColumnSpec, TableSpec } from '../interfaces/table-spec.interface';
 import { PagedResult } from './api-service';
 import { Observable } from 'rxjs';
+import { FormSpec } from '../interfaces/form-spec.interface';
 
 export enum RemoteLookupCommand {
   CMD_FREE_QUERY_REMOTE = 1000,
@@ -39,7 +40,6 @@ export interface TableInfo {
   table_name: string;
   primary_key: string;
   columns: TableColumnInfo[];
-  formSpec?: FormlyFieldConfig[];
 }
 
 @Injectable({
@@ -64,11 +64,12 @@ export class MockData {
   SERVER_HOST = 'beta.elvispos.com';
 
   tableInfo: { [key: string]: TableInfo; } = {};
+  formSpecs: { [key: string]: FormSpec; } = {};
   tableSpecs: { [key: string]: TableSpec; } = {};
 
   imageBuckets: any = {
     'system.velocity_codes': 'http://beta.elvispos.com:8080/assets/pos/velocity-code-images/',
-    'elvispos.barcode_price_new': 'http://beta.elvispos.com:8080/assets/pos/barcode-price-images/',
+    'elvispos.barcode_price_new': 'http://beta.elvispos.com:8080/assets/pos/article-images/',
   }
 
   get tableInfoArray(): TableInfo[] {
@@ -86,6 +87,7 @@ export class MockData {
     for (const _table of this.TABLES) {
       const [_schema, _tableName] = _table.split('.');
       _requests.push(this.getTableDefinition(_schema, _tableName));
+      this.formSpecs[_table] = { fields: [] };
     }
 
     const _tableDefinitions = await Promise.all(_requests);
@@ -97,7 +99,7 @@ export class MockData {
 
     const _formSpecs = await this.getFormSpecs();
     for (const _spec of _formSpecs) {
-      this.tableInfo[_spec.host_id].formSpec = _spec.data;
+      this.formSpecs[_spec.host_id] = _spec.data;
     }
 
     const _tableSpecs = await this.getTableSpecs();
@@ -179,9 +181,11 @@ export class MockData {
     }
   }
 
-  async getEntity(_table: string): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
-    const orderBy = this.tableInfo[_table]?.primary_key ? ` ORDER BY ${this.tableInfo[_table].primary_key} ASC ` : '';
-    const query = `SELECT * FROM ${_table} ${orderBy} LIMIT 1`;
+  async getEntity(_table: string, _entityId: string | number): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
+    const whereClause = this.tableInfo[_table]?.primary_key ? ` WHERE ${this.tableInfo[_table].primary_key} = '${_entityId}' ` : '';
+    const query = `SELECT * FROM ${_table} ${whereClause} LIMIT 1`;
+
+    console.log('Get Entity Query:', query);
 
     try {
       const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
@@ -305,13 +309,13 @@ export class MockData {
     }
   }
 
-  async getFormSpecs(): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
+  async getFormSpecs(): Promise<{ id: string, host_id: string, data: FormSpec }[]> {
     const query = `SELECT * FROM frontoffice.entity_form_specs`;
 
     try {
       const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
       console.log(`Found Form Specs: ${_resp.length}x`);
-      return _resp as { id: string, host_id: string, data: FormlyFieldConfig[] }[];
+      return _resp as { id: string, host_id: string, data: FormSpec }[];
     } catch (error) {
       console.warn('Error fetching Form Specs:', error);
       return [];
@@ -331,7 +335,7 @@ export class MockData {
     }
   }
 
-  async onSaveFormSpec(hostId: string, formSpec: FormlyFieldConfig[]) {
+  async onSaveFormSpec(hostId: string, formSpec: FormSpec) {
     const query = `
       INSERT INTO frontoffice.entity_form_specs (host_id, data)
       VALUES ('${hostId}', $$${JSON.stringify(formSpec)}$$)
