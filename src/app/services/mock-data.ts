@@ -57,6 +57,7 @@ export class MockData {
     'system.logos',
     'system.store_device_types',
     'system.devices',
+    'system.velocity_code_group_descr',
     'elvispos.barcode_price_new',
     'elvispos.vat_tax_rates',
   ]
@@ -69,6 +70,7 @@ export class MockData {
 
   imageBuckets: any = {
     'system.velocity_codes': 'http://beta.elvispos.com:8080/assets/pos/velocity-code-images/',
+    'system.velocity_code_group_descr': 'http://beta.elvispos.com:8080/assets/pos/velocity-code-group-images/',
     'elvispos.barcode_price_new': 'http://beta.elvispos.com:8080/assets/pos/article-images/',
   }
 

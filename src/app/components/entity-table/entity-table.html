@@ -55,12 +55,12 @@
   <ng-template pTemplate="header">
     <tr>
       @if (!tableSpec.disableActions) {
-        <th pFrozenColumn style="border-right: 1px solid var(--p-slate-300);"></th>
+        <th pFrozenColumn style="width: 50px; border-right: 1px solid var(--p-slate-300);"></th>
       }
       
       @for (col of tableSpec.columns; track col.field) {
         @if (!col.hidden) {
-          <th pReorderableColumn [pSortableColumn]="col.type != 'image' ? col.field : undefined" [style]="{ 'min-width': (col.type === 'barcode' ? '100px' : '')}">
+          <th pReorderableColumn [pSortableColumn]="col.type != 'image' ? col.field : undefined" [style]="{ 'min-width': (col.type === 'barcode' ? '100px' : ''), 'width': (col.type === 'image' ? '50px' : '')}">
             <div class="flex flex-row items-center justify-between">
               <div class="flex flex-row items-center gap-2">
                 @if (col.type === 'image') {
@@ -90,7 +90,7 @@
 
       @for (col of tableSpec.columns; track col.field) {
         @if (!col.hidden) {
-          <td [style]="{ 'min-width': (col.type === 'barcode' ? '100px' : '')}">
+          <td [style]="{ 'min-width': (col.type === 'barcode' || col.type ? '50px' : '')}">
             @if (col.isPrimaryKey) {
               @if (col.type === 'relation') {
                 @if (item[col.field + '__display']) {
