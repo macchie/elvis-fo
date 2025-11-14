@@ -82,6 +82,12 @@ export class EntityForm implements OnInit {
 
   async clearData() {
     this.model = {};
+    if (this.readonly) {
+      this.form.disable();
+    } else {
+      this.form.enable();
+    }
+    this.setMeta();
     this.cd.detectChanges();
   }
 

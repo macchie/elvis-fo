@@ -78,7 +78,7 @@
   <ng-template pTemplate="body" let-item>
     <tr>
       @if (!tableSpec.disableActions) {
-        <td pFrozenColumn style="width: 50px; border-right: 1px solid var(--p-slate-300);">
+        <td pFrozenColumn style="width: 50px; border-right: 1px solid var(--p-slate-300); z-index: 1;">
           <p-buttongroup>
             <p-button text size="small" icon="pi pi-eye" (click)="onViewRow($event, item)"/>
             <p-button text size="small" icon="pi pi-pen-to-square" (click)="onEditRow($event, item)"/>
@@ -103,11 +103,9 @@
               }
             } @else {
               @if (col.type === 'boolean') {
-                <p-tag style="width: 100%;" [severity]="item[col.field] ? 'success' : 'danger'">
-                  <i class="pi {{item[col.field] ? 'pi-check' : 'pi-times'}}"></i>
-                </p-tag>
+                <p-tag style="width: 100%;" [severity]="item[col.field] ? 'success' : 'danger'"><i class="pi {{item[col.field] ? 'pi-check' : 'pi-times'}}"></i></p-tag>
               } @else if (col.type === 'date') {
-                <span style="white-space: pre;" class="{{col.formatting ? col.formatting.join(' ') : ''}} text-{{col.color}}"><small>{{ item[col.field] | date:'medium' }}</small></span>
+                <span style="white-space: pre;" class="text-{{col.color}}"><small>{{ item[col.field] | date:'medium' }}</small></span>
               } @else if (col.type === 'image') {
                 @if (item[col.field]) {
                   <p-image loading="lazy" src="{{mockDataSvc.imageBuckets[hostId!]}}/{{item[col.field]}}" alt="Image" [preview]="true" style="width: 50px; height: 50px;" />
@@ -127,11 +125,11 @@
                     [severity]="col.color" [style]="{'white-space': 'pre'}"
                     (click)="onViewRelation(col, item[col.field])"
                   >
-                    <span class="{{col.formatting ? col.formatting.join(' ') : ''}}">{{ item[col.field + '__display'] }}</span>
+                    <span class="">{{ item[col.field + '__display'] }}</span>
                   </p-button>
                 }
               } @else {
-                <span style="white-space: pre;" class="{{col.formatting ? col.formatting.join(' ') : ''}} text-{{col.color}}">{{ item[col.field] }}</span>
+                <span style="white-space: pre;" class="text-{{col.color}}">{{ item[col.field] }}</span>
               }
             }
           </td>
@@ -166,7 +164,7 @@
   </ng-template>
 </p-drawer>
 
-<p-drawer [dismissible]="false" [(visible)]="showRowDrawer" #rowDrawer position="right" styleClass="!w-full md:!w-80 lg:!w-[60rem]">
+<p-drawer [dismissible]="entityForm.readonly" [(visible)]="showRowDrawer" #rowDrawer position="right" styleClass="!w-full md:!w-80 lg:!w-[60rem]">
   <ng-template #header>
     <div class="flex items-center gap-2">
       <!-- <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle" /> -->
