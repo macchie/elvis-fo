@@ -67,7 +67,7 @@
 
     p-card {
       width: 100%;
-      max-width: 1200px;
+      max-width: calc(100% - 64px);
       margin: 0 auto 32px auto;
     }
   }

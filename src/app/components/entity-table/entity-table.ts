@@ -10,7 +10,7 @@ import { ButtonGroupModule } from 'primeng/buttongroup';
 import { ButtonModule } from 'primeng/button';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { PanelModule } from 'primeng/panel';
-import { TableSpec } from '../../interfaces/table-spec.interface';
+import { TableColumnSpec, TableSpec } from '../../interfaces/table-spec.interface';
 import { APIService, PagedResult } from '../../services/api-service';
 import { FormsModule } from '@angular/forms';
 import { Drawer, DrawerModule } from 'primeng/drawer';
@@ -24,6 +24,10 @@ import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import { ToolbarModule } from 'primeng/toolbar';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 
 interface Item {
@@ -56,8 +60,12 @@ interface Item {
     SelectModule,
     InputTextModule,
     ToggleSwitchModule,
-    SelectButtonModule
+    SelectButtonModule,
+    ToolbarModule,
+    ConfirmDialogModule,
+    ToastModule
   ],
+  providers: [ConfirmationService, MessageService],
   templateUrl: './entity-table.html',
   styleUrl: './entity-table.css',
 })
@@ -66,7 +74,9 @@ export class EntityTable {
   constructor(
     public mockDataSvc: MockData,
     private apiService: APIService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private confirmationService: ConfirmationService, 
+    private messageService: MessageService
   ) {
   }
 
@@ -90,16 +100,25 @@ export class EntityTable {
     { label: 'Number', value: 'number' },
     { label: 'Date', value: 'date' },
     { label: 'Boolean', value: 'boolean' },
+    { label: 'Image', value: 'image' },
+    { label: 'Relation', value: 'relation' },
+    { label: 'Barcode', value: 'barcode' },
     { label: 'Custom', value: 'custom' },
   ];
 
   _colors = [
     'primary',
+    'contrast',
     'success',
     'info',
     'warn',
     'danger',
-    'contrast',
+  ];
+
+  _formatting = [
+    { value: 'text-bold', icon: 'pi pi-circle-on' },
+    { value: 'text-italic', icon: 'pi pi-align-center' },
+    { value: 'text-underline', icon: 'pi pi-minus' },
   ];
 
   ngOnInit(): void {
@@ -127,7 +146,7 @@ export class EntityTable {
 
     console.log('Loading items with params:', this.schemaName, this.tableName, offset, limit, sortField, sortOrder, filterField, filterValue);
 
-    this.mockDataSvc.fetchItems<Item>(this.schemaName, this.tableName, offset, limit, sortField, sortOrder, filterField, filterValue)
+    this.mockDataSvc.fetchItems<Item>(this.schemaName, this.tableName, this.tableSpec, offset, limit, sortField, sortOrder, filterField, filterValue)
       .subscribe({
         next: (res: any) => {
           if (!res || !res[0]) {
@@ -151,19 +170,44 @@ export class EntityTable {
     this.table.reset();
   }
 
-  onEditTable() {
-    // console.log('Edit Field Clicked!', index);
-    // this._currentFieldIdx = index;
-    // this._setFieldTypesForField(index);
-
-    // if (this._formSpec[index].type === 'belongs-to') {
-    //   this._formSpec[index].props.fromEntity = this.hostId;
-    //   this._formSpec[index].props.fromField = this._formSpec[index].key;
-    // }
-
-    // this.editFieldPopover.show(event);
-    // this.editFieldDrawer.show();
+  onEditSpec() {
     this.showDrawer = true;
+  }
+
+  onSaveSpec() {
+    console.log('Table Spec to Save:', this.tableSpec);
+    this.mockDataSvc.onSaveTableSpec(this.hostId!, this.tableSpec);
+  }
+
+  onRemoveColumn(col: TableColumnSpec, event: Event) {
+
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Do you want to delete this Column?',
+      header: 'Danger Zone',
+      icon: 'pi pi-info-circle',
+      rejectLabel: 'Cancel',
+      rejectButtonProps: {
+        label: 'Cancel',
+        severity: 'secondary',
+        outlined: true,
+      },
+      acceptButtonProps: {
+        label: 'Delete',
+        severity: 'danger',
+      },
+      accept: () => {
+        this.messageService.add({ severity: 'success', summary: 'Confirmed', detail: 'Column deleted!' });
+
+        const idx = this.tableSpec.columns.findIndex(c => c.field === col.field);
+        if (idx !== -1) {
+          this.tableSpec.columns.splice(idx, 1);
+        }
+      },
+      reject: () => {
+        this.messageService.add({ severity: 'info', summary: 'Rejected', detail: 'You have rejected.' });
+      },
+    });
   }
 
 }

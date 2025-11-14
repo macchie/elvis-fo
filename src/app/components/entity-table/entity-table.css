@@ -23,3 +23,15 @@ i.color-warn {
 i.color-danger {
   color: var(--p-red-500);
 }
+
+span.text-bold {
+  font-weight: 700 !important;
+}
+
+span.text-underline {
+  text-decoration: underline !important;
+}
+
+span.text-italic {
+  font-style: italic !important;
+} 

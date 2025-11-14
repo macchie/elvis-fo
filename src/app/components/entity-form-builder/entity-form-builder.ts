@@ -191,7 +191,7 @@ export class EntityFormBuilder implements OnInit {
       }
       delete _spec['id'];
     }
-    this.mockDataSvc.onSaveFormDefinition(this.hostId!, this._formSpec);
+    this.mockDataSvc.onSaveFormSpec(this.hostId!, this._formSpec);
   }
 
   getProductLabel(product: any): string {

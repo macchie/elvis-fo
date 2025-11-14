@@ -5,8 +5,13 @@ export interface TableColumnSpec {
   header: string;
   sortable?: boolean;
   filterable?: boolean;
-  type?: 'text' | 'number' | 'date' | 'boolean' | 'custom';
+  type?: 'text' | 'number' | 'date' | 'boolean' | 'image' | 'barcode' | 'relation' | 'custom';
   color?: "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | null | undefined;
+  formatting?: string[] | null | undefined;
+  hidden: boolean;
+  relationTo?: string;
+  relationToField?: string;
+  relationToDisplayField?: string;
 }
 
 export interface TableSpec {

@@ -19,7 +19,7 @@
 <p-table #table 
   size="small"
   stripedRows
-  showGridlines
+  [showGridlines]="false"
   [value]="items" 
   [lazy]="true" 
   (onLazyLoad)="loadItems($event)" 
@@ -33,24 +33,27 @@
 >
   <ng-template pTemplate="header">
     <tr>
-      <th style="border-right: 1px solid rgba(0,0,0,.2); width: 50px; background: white;" pFrozenColumn>
-        <p-button fluid text size="small" icon="pi pi-pen-to-square" label="Edit Table" severity="info" (click)="onEditTable()" />
+      <th pFrozenColumn>
+        <p-button fluid text size="small" icon="pi pi-pen-to-square" label="Edit Table" severity="info" (click)="onEditSpec()" />
       </th>
       @for (col of tableSpec.columns; track col.field) {
-        <th [pSortableColumn]="col.field">
-          <div class="flex flex-row items-center justify-between">
-            <div class="flex flex-row items-center gap-2">
-              <!-- @if (_col.sortable) {
-              } -->
-              <p-sortIcon [field]="col.field" />
-              <span style="white-space: pre;">{{col.header}}</span>
-            </div>
+        @if (!col.hidden) {
+          <th [pSortableColumn]="col.type != 'image' ? col.field : undefined" [style]="{ 'min-width': (col.type === 'barcode' ? '100px' : '')}">
+            <div class="flex flex-row items-center justify-between">
+              <div class="flex flex-row items-center gap-2">
+                @if (col.type === 'image') {
+                } @else {
+                  <span style="white-space: pre;">{{col.header}}</span>
+                  <p-sortIcon [field]="col.field" />
+                }
+              </div>
 
-            <!-- @if (editMode) {
-              <p-button text size="small" icon="pi pi-cog" severity="info"></p-button>
-            } -->
-          </div>
-        </th>
+              <!-- @if (editMode) {
+                <p-button text size="small" icon="pi pi-cog" severity="info"></p-button>
+              } -->
+            </div>
+          </th>
+        }
       }
 
       <!-- @if (editMode) {
@@ -62,7 +65,7 @@
   </ng-template>
   <ng-template pTemplate="body" let-item>
     <tr>
-      <td pFrozenColumn class="flex flex-row items-center justify-end" style="border-right: 1px solid rgba(0,0,0,.2); background: white;">
+      <td pFrozenColumn style="width: 50px;">
         <p-buttongroup>
           <p-button text size="small" icon="pi pi-eye" />
           <p-button text size="small" icon="pi pi-pen-to-square" />
@@ -72,20 +75,37 @@
       </td>
 
       @for (col of tableSpec.columns; track col.field) {
-        <td>
-          @if (col.isPrimaryKey) {
-            <p-tag style="width: 100%;" [severity]="col.color || 'contrast'" [value]="item[col.field]"></p-tag>
-          } @else {
-
-            @if (col.type === 'boolean') {
-              <p-tag style="width: 100%;" [severity]="item[col.field] ? 'success' : 'warn'" [value]="item[col.field]"></p-tag>
-            } @else if (col.type === 'date') {
-              <span style="white-space: pre;">{{ item[col.field] | date:'medium' }}</span>
+        @if (!col.hidden) {
+          <td [style]="{ 'min-width': (col.type === 'barcode' ? '100px' : '')}">
+            @if (col.isPrimaryKey) {
+              @if (col.type === 'relation') {
+                <p-tag style="width: 100%; white-space: pre;" [severity]="col.color || 'contrast'" [value]="item[col.field + '__display']"></p-tag>
+              } @else {
+                <p-tag style="width: 100%; white-space: pre;" [severity]="col.color || 'contrast'" [value]="item[col.field]"></p-tag>
+              }
             } @else {
-              <span style="white-space: pre;">{{ item[col.field] }}</span>
+              @if (col.type === 'boolean') {
+                <p-tag style="width: 100%;" [severity]="item[col.field] ? 'success' : 'secondary'" [value]="item[col.field]"></p-tag>
+              } @else if (col.type === 'date') {
+                <span style="white-space: pre;">{{ item[col.field] | date:'medium' }}</span>
+              } @else if (col.type === 'image') {
+                @if (item[col.field]) {
+                  <p-avatar image="{{mockDataSvc.imageBuckets[hostId!]}}/{{item[col.field]}}" size="large" />
+                }
+              } @else if (col.type === 'barcode') {
+                @if (item[col.field]) {
+                  <a href="http://beta.elvispos.com:7400/barcode/render?code={{item[col.field]}}&type=code128" target="_blank">
+                    <img src="http://beta.elvispos.com:7400/barcode/render?code={{item[col.field]}}&type=code128" [alt]="item[col.field]"/>
+                  </a>
+                }
+              } @else if (col.type === 'relation') {
+                <span style="white-space: pre;">{{ item[col.field + '__display'] }}</span>
+              }@else {
+                <span style="white-space: pre;" class="{{col.formatting ? col.formatting.join(' ') : ''}}">{{ item[col.field] }}</span>
+              }
             }
-          }
-        </td>
+          </td>
+        }
       }
 
       <!-- @if (editMode) {
@@ -103,7 +123,10 @@
 </p-table>
 
 
-<p-drawer [(visible)]="showDrawer" #editTableDrawer header="Edit Table" position="right" styleClass="!w-full md:!w-80 lg:!w-[35rem]">
+<p-drawer [(visible)]="showDrawer" #editTableDrawer header="Edit Table" position="right" styleClass="!w-full md:!w-80 lg:!w-[45rem]">
+  <div class="flex flex-row items-center justify-end mb-4">
+    <p-button size="small" icon="pi pi-save" label="Save" severity="success" (click)="onSaveSpec()" />
+  </div>
   <div class="flex flex-col gap-4">
     <div class="flex flex-col gap-4">
       @for (col of tableSpec.columns; track col.field) {
@@ -113,29 +136,83 @@
             <b class="text-slate-700">{{col.field}}</b>
 
             <div class="flex flex-row items-center justify-end ml-auto">
-              <label for="isPrimaryKey" class="m-0 p-0 mr-2">Is Primary Key</label>
-              <p-toggleswitch id="isPrimaryKey" [(ngModel)]="col.isPrimaryKey" />
+              <label for="isPrimaryKey" class="m-0 p-0 mr-2">Hide</label>
+              <p-toggleswitch id="isPrimaryKey" [(ngModel)]="col.hidden" />
             </div>
+
+            <p-button text icon="pi pi-trash" severity="danger" class="ml-2" size="small" (click)="onRemoveColumn(col, $event)"></p-button>
           </div>
 
           <div class="flex flex-row items-center justify-stretch gap-4 mb-4">
             <p-floatlabel variant="on" class="flex-2">
-              <p-select fluid [options]="_columnTypes" optionLabel="label" optionValue="value" [(ngModel)]="col.type"/>
+              <p-select fluid [options]="_columnTypes" optionLabel="label" optionValue="value" [(ngModel)]="col.type" [disabled]="col.hidden" />
               <label for="type">Column Type</label>
             </p-floatlabel>
             <p-floatlabel variant="on" class="flex-3">
-              <input pInputText fluid type="text" placeholder="label" [(ngModel)]="col.header" />
+              <input pInputText fluid type="text" placeholder="label" [(ngModel)]="col.header" [disabled]="col.hidden" />
               <label for="label">Column Label</label>
             </p-floatlabel>
           </div>
 
-          <div class="flex flex-row items-center justify-stretch bg-white p-1 rounded-lg mb-4">
-            <p-selectbutton fluid [options]="_colors" [(ngModel)]="col.color" [disabled]="!col.isPrimaryKey">
+          @if (col.type === 'relation') {
+            <div class="flex flex-row items-center justify-stretch gap-4 mb-4">
+              <p-floatlabel variant="on" class="flex-1">
+                <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name"
+                  optionValue="name" [(ngModel)]="col.relationTo" [disabled]="col.hidden"
+                  (ngModelChange)="col.relationToField = undefined; col.relationToDisplayField = undefined;" />
+                <label for="toEntity">To Entity</label>
+              </p-floatlabel>
+              @if (col.relationTo) {
+                <p-floatlabel variant="on" class="flex-1">
+                  <p-select fluid [disabled]="col.hidden || !col.relationTo"
+                    [options]="mockDataSvc.tableInfo[col.relationTo!].columns" [filter]="true"
+                    filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="col.relationToField" />
+                  <label for="toField">To Field</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="flex-1">
+                  <p-select fluid [disabled]="col.hidden || !col.relationTo"
+                    [options]="mockDataSvc.tableInfo[col.relationTo!].columns" [filter]="true"
+                    filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="col.relationToDisplayField" />
+                  <label for="toField">To Field</label>
+                </p-floatlabel>
+              } @else {
+                <div class="flex-2"></div>
+              }
+              <!-- <p-floatlabel variant="on" class="flex-1">
+                <input pInputText fluid type="text" [(ngModel)]="col.relationTo" [disabled]="col.hidden" />
+                <label for="relationTo">Relation To</label>
+              </p-floatlabel> -->
+              <!-- <p-floatlabel variant="on" class="flex-1">
+                <input pInputText fluid type="text" [(ngModel)]="col.relationToField" [disabled]="col.hidden" />
+                <label for="relationToField">Field</label>
+              </p-floatlabel> -->
+              <!-- <p-floatlabel variant="on" class="flex-1">
+                <input pInputText fluid type="text" [(ngModel)]="col.relationToDisplayField" [disabled]="col.hidden" />
+                <label for="relationToField">Display Field</label>
+              </p-floatlabel> -->
+            </div>
+          }
+
+          <div class="flex flex-row items-center justify-stretch bg-white gap-4 p-2 rounded-lg">
+            @if (col.type !== 'image') {
+              <p-toggleswitch id="isPrimaryKey" [(ngModel)]="col.isPrimaryKey" [disabled]="col.hidden" />
+            }
+            <p-selectbutton class="flex-3" fluid size="small" [options]="_colors" [(ngModel)]="col.color" [disabled]="col.hidden">
               <ng-template #item let-color>
                 <i class="pi pi-circle-on color-{{color}}"></i>
               </ng-template>
             </p-selectbutton>
+            <p-selectbutton class="flex-1" fluid size="small" [options]="_formatting" [(ngModel)]="col.formatting" [disabled]="col.hidden"
+              optionValue="value" [multiple]="true">
+              <ng-template #item let-formatting>
+                <i class="pi {{formatting.icon}}"></i>
+              </ng-template>
+            </p-selectbutton>
           </div>
+
+          
+
+          <!-- <pre>{{ col | json}}</pre> -->
         </div>
       }
 
@@ -294,3 +371,6 @@
     </div>
   </div>
 </p-drawer>
+
+<p-toast position="bottom-left"/>
+<p-confirmdialog />

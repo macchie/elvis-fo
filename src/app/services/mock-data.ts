@@ -57,13 +57,19 @@ export class MockData {
     'system.logos',
     'system.store_device_types',
     'system.devices',
-    'elvispos.barcode_price_new'
+    'elvispos.barcode_price_new',
+    'elvispos.vat_tax_rates',
   ]
 
   SERVER_HOST = 'beta.elvispos.com';
 
   tableInfo: { [key: string]: TableInfo; } = {};
   tableSpecs: { [key: string]: TableSpec; } = {};
+
+  imageBuckets: any = {
+    'system.velocity_codes': 'http://beta.elvispos.com:8080/assets/pos/velocity-code-images/',
+    'elvispos.barcode_price_new': 'http://beta.elvispos.com:8080/assets/pos/barcode-price-images/',
+  }
 
   get tableInfoArray(): TableInfo[] {
     return Object.values(this.tableInfo);
@@ -89,13 +95,17 @@ export class MockData {
       this.tableInfo[key] = _tableDef;
     }
 
-    let _formSpecsCount = 0;
-    const _formSpecs = await this.getFormDefinitions();
-
+    const _formSpecs = await this.getFormSpecs();
     for (const _spec of _formSpecs) {
       this.tableInfo[_spec.host_id].formSpec = _spec.data;
-      _formSpecsCount++;
     }
+
+    const _tableSpecs = await this.getTableSpecs();
+    for (const _spec of _tableSpecs) {
+      this.tableSpecs[_spec.host_id] = _spec.data;
+    }
+
+    console.log('Table Specs Loaded:', this.tableSpecs);
     
     for (const _table of this.TABLES) {
       if (!this.tableSpecs[_table]) {
@@ -103,9 +113,10 @@ export class MockData {
       }
     }
 
-    console.timeEnd('MockData Load');
+    console.log('Table Info Loaded:', this.tableInfo);
+    console.log('Table Specs:', this.tableSpecs);
 
-    console.log(`Loaded Form Definitions: ${Object.keys(_formSpecsCount).length}x`);
+    console.timeEnd('MockData Load');
   }
 
   createSpecFromTableInfo(_tableInfo: TableInfo): TableSpec {
@@ -123,6 +134,7 @@ export class MockData {
         header: _col.name.replace(/(n0_|n2_|sz_|dt_|bl_|j_)/g, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
         sortable: true,
         filterable: true,
+        hidden: false,
       }
       
       _tableInfo.primary_key.split(', ').includes(_col.name) ? _colSpec.isPrimaryKey = true : null;
@@ -293,20 +305,33 @@ export class MockData {
     }
   }
 
-  async getFormDefinitions(): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
+  async getFormSpecs(): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
     const query = `SELECT * FROM frontoffice.entity_form_specs`;
 
     try {
       const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
-      console.log(`Found Form Definitions: ${_resp.length}x`);
+      console.log(`Found Form Specs: ${_resp.length}x`);
       return _resp as { id: string, host_id: string, data: FormlyFieldConfig[] }[];
     } catch (error) {
-      console.warn('Error fetching form definition:', error);
+      console.warn('Error fetching Form Specs:', error);
       return [];
     }
   }
 
-  async onSaveFormDefinition(hostId: string, formSpec: FormlyFieldConfig[]) {
+  async getTableSpecs(): Promise<{ id: string, host_id: string, data: TableSpec }[]> {
+    const query = `SELECT * FROM frontoffice.entity_specs`;
+
+    try {
+      const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
+      console.log(`Found Table Specs: ${_resp.length}x`);
+      return _resp as { id: string, host_id: string, data: TableSpec }[];
+    } catch (error) {
+      console.warn('Error fetching Table Specs:', error);
+      return [];
+    }
+  }
+
+  async onSaveFormSpec(hostId: string, formSpec: FormlyFieldConfig[]) {
     const query = `
       INSERT INTO frontoffice.entity_form_specs (host_id, data)
       VALUES ('${hostId}', $$${JSON.stringify(formSpec)}$$)
@@ -315,15 +340,32 @@ export class MockData {
 
     try {
       const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
-      console.log(`Saved Form Definition for ${hostId}`, _resp);
+      console.log(`Saved Form Spec for ${hostId}`, _resp);
       return _resp;
     } catch (error) {
-      console.warn('Error saving form definition:', error);
+      console.warn('Error saving Form Spec:', error);
       return null;
     }
   }
 
-  async getFormDefinition(schemaName: string, tableName: string): Promise<FormlyFieldConfig[]> {
+  async onSaveTableSpec(hostId: string, tableSpec: TableSpec) {
+    const query = `
+      INSERT INTO frontoffice.entity_specs (host_id, data)
+      VALUES ('${hostId}', $$${JSON.stringify(tableSpec)}$$)
+      ON CONFLICT (host_id) DO UPDATE SET data = EXCLUDED.data
+    `;
+
+    try {
+      const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
+      console.log(`Saved Table Spec for ${hostId}`, _resp);
+      return _resp;
+    } catch (error) {
+      console.warn('Error saving Table Spec:', error);
+      return null;
+    }
+  }
+
+  async getFormSpec(schemaName: string, tableName: string): Promise<FormlyFieldConfig[]> {
     const query = `
       SELECT * FROM frontoffice.entity_form_specs
       WHERE host_id = '${schemaName}.${tableName}'
@@ -331,10 +373,26 @@ export class MockData {
 
     try {
       const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
-      console.log(`Form Definition for ${schemaName}.${tableName}`, _resp[0].data);
+      console.log(`Form Spec for ${schemaName}.${tableName}`, _resp[0].data);
       return _resp[0].data as FormlyFieldConfig[];
     } catch (error) {
-      console.warn('Error fetching form definition:', error);
+      console.warn('Error fetching Form Spec:', error);
+      return [];
+    }
+  }
+
+  async getTableSpec(schemaName: string, tableName: string): Promise<FormlyFieldConfig[]> {
+    const query = `
+      SELECT * FROM frontoffice.entity_specs
+      WHERE host_id = '${schemaName}.${tableName}'
+    `;
+
+    try {
+      const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
+      console.log(`Table Spec for ${schemaName}.${tableName}`, _resp[0].data);
+      return _resp[0].data as FormlyFieldConfig[];
+    } catch (error) {
+      console.warn('Error fetching Table Spec:', error);
       return [];
     }
   }
@@ -342,6 +400,7 @@ export class MockData {
   fetchItems<T>(
     schemaName: string, 
     tableName: string,
+    tableSpec: TableSpec,
     offset: number,
     limit: number,
     sortField?: string,
@@ -349,28 +408,27 @@ export class MockData {
     filterField?: string,
     filterValue?: any
   ): Observable<PagedResult<T>> {
-    // let params = new HttpParams()
-    //   .set('offset', offset.toString())
-    //   .set('limit', limit.toString());
 
-    // if (sortField) {
-    //   params = params.set('sortField', sortField);
-    // }
-    // if (sortOrder) {
-    //   params = params.set('sortOrder', sortOrder);
-    // }
-    // if (filterField && filterValue != null) {
-    //   params = params.set('filterField', filterField);
-    //   params = params.set('filterValue', filterValue.toString());
-    // }
+    const _relationColumns = tableSpec.columns.filter(col => col.type === 'relation' && !col.hidden);
+    let _relationSelects = '';
+    let _relationJoins = '';
+
+    if (_relationColumns.length > 0) {
+      _relationColumns.forEach((col, index) => {
+        const alias = `rel_${col.field}`;
+        _relationSelects += `, TRIM(${alias}.${col.relationToDisplayField}::text) AS ${col.field}__display `;
+        _relationJoins += `LEFT JOIN ${col.relationTo} ${alias} ON (it.${col.field} = ${alias}.${col.relationToField})`;
+      });
+    }
 
     const _query = `
       WITH
         paged AS (
           SELECT
             it.*
-          FROM
-            ${schemaName}.${tableName} it
+            ${_relationSelects}
+          FROM ${schemaName}.${tableName} it
+          ${_relationJoins}
           ${ sortField ? `ORDER BY it.${sortField} ${sortOrder?.toUpperCase()}` : '' }
           LIMIT ${limit} 
           OFFSET ${offset}
