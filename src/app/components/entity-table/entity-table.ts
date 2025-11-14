@@ -153,7 +153,7 @@ export class EntityTable {
   }
 
   onRefresh() {
-    this.table.reset();
+    // TODO: Implement refresh logic
   }
 
   onViewRow(event: Event, rowData: any) {
