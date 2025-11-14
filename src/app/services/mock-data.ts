@@ -182,7 +182,7 @@ export class MockData {
   }
 
   async getEntity(_table: string, _entityId: string | number): Promise<{ id: string, host_id: string, data: FormlyFieldConfig[] }[]> {
-    const whereClause = this.tableInfo[_table]?.primary_key ? ` WHERE ${this.tableInfo[_table].primary_key} = '${_entityId}' ` : '';
+    const whereClause = this.tableInfo[_table]?.primary_key ? ` WHERE ${this.tableInfo[_table].primary_key} = ${_entityId} ` : '';
     const query = `SELECT * FROM ${_table} ${whereClause} LIMIT 1`;
 
     console.log('Get Entity Query:', query);
@@ -425,6 +425,18 @@ export class MockData {
       });
     }
 
+    let _filterClause = '';
+
+    if (tableSpec.logicalDeleteColumns && tableSpec.logicalDeleteColumns.length > 0) {
+      _filterClause = ' WHERE ';
+      for (const delCol of tableSpec.logicalDeleteColumns) {
+        _filterClause += ` it.${delCol} IS NULL `;
+        if (delCol !== tableSpec.logicalDeleteColumns[tableSpec.logicalDeleteColumns.length - 1]) {
+          _filterClause += ' AND ';
+        }
+      }
+    }
+
     const _query = `
       WITH
         paged AS (
@@ -433,6 +445,7 @@ export class MockData {
             ${_relationSelects}
           FROM ${schemaName}.${tableName} it
           ${_relationJoins}
+          ${_filterClause}
           ${ sortField ? `ORDER BY it.${sortField} ${sortOrder?.toUpperCase()}` : '' }
           LIMIT ${limit} 
           OFFSET ${offset}

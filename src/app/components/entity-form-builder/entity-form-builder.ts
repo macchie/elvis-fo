@@ -81,7 +81,7 @@ export class EntityFormBuilder implements OnInit {
     { label: '1/3', value: 'col-span-4' },
     { label: '1/2', value: 'col-span-6' },
     { label: '2/3', value: 'col-span-8' },
-    { label: 'Full Width', value: 'col-span-6' },
+    { label: 'Full Width', value: 'col-span-12' },
   ];
 
   fieldList: TableColumnInfo[] = [];

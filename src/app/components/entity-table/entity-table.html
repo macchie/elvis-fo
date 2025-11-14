@@ -21,15 +21,15 @@
   <ng-template #start>
     <div class="flex flex-row items-center justify-between gap-4">
       <p-button text size="small" icon="pi pi-sync" (click)="onRefresh()"></p-button>
-      <p-tag severity="info">{{hostId}}</p-tag>
+      <p-tag>{{hostId}}</p-tag>
     </div>
   </ng-template>
   <ng-template #center>
-    <p>Showing <b>{{ items.length }}</b> of <b>{{ totalRecords }}</b> records.</p>
+    <p><b>{{ items.length }}</b> of <b>{{ totalRecords }}</b> records</p>
   </ng-template>
   <ng-template #end>
     <div class="flex flex-row items-center justify-between gap-4">
-      <p-splitbutton size="small" severity="info" label="Add New" icon="pi pi-plus" (onClick)="onCreateRow($event)" [model]="_tableActions" />
+      <p-splitbutton size="small" label="Add New" icon="pi pi-plus" (onClick)="onCreateRow($event)" [model]="_tableActions" />
     </div>
   </ng-template>
 </p-toolbar>
@@ -50,6 +50,7 @@
   [sortMode]="'single'"
   [reorderableColumns]="true"
   [scrollable]="true"
+  (onColReorder)="onColReorder($event)"
 >
   <ng-template pTemplate="header">
     <tr>
@@ -102,7 +103,9 @@
               }
             } @else {
               @if (col.type === 'boolean') {
-                <p-tag style="width: 100%;" [severity]="item[col.field] ? 'success' : 'secondary'" [value]="item[col.field] || false"></p-tag>
+                <p-tag style="width: 100%;" [severity]="item[col.field] ? 'success' : 'danger'">
+                  <i class="pi {{item[col.field] ? 'pi-check' : 'pi-times'}}"></i>
+                </p-tag>
               } @else if (col.type === 'date') {
                 <span style="white-space: pre;" class="{{col.formatting ? col.formatting.join(' ') : ''}} text-{{col.color}}"><small>{{ item[col.field] | date:'medium' }}</small></span>
               } @else if (col.type === 'image') {
@@ -118,7 +121,15 @@
                   </p-image>
                 }
               } @else if (col.type === 'relation') {
-                <span style="white-space: pre;" class="{{col.formatting ? col.formatting.join(' ') : ''}} text-{{col.color}}">{{ item[col.field + '__display'] }}</span>
+                @if (item[col.field]) {
+                  <p-button 
+                    text fluid size="small" 
+                    [severity]="col.color" [style]="{'white-space': 'pre'}"
+                    (click)="onViewRelation(col, item[col.field])"
+                  >
+                    <span class="{{col.formatting ? col.formatting.join(' ') : ''}}">{{ item[col.field + '__display'] }}</span>
+                  </p-button>
+                }
               } @else {
                 <span style="white-space: pre;" class="{{col.formatting ? col.formatting.join(' ') : ''}} text-{{col.color}}">{{ item[col.field] }}</span>
               }
@@ -138,10 +149,90 @@
 </p-table>
 
 
-<p-drawer [(visible)]="showEditTableSpecDrawer" #editTableDrawer header="Edit Table" position="right" styleClass="!w-full md:!w-80 lg:!w-[47.5rem]">
-  <app-entity-table-builder [hostId]="hostId!"></app-entity-table-builder>
+<p-drawer [dismissible]="false" [(visible)]="showEditTableSpecDrawer" #editTableDrawer position="right" styleClass="!w-full md:!w-80 lg:!w-[47.5rem]">
+  <ng-template #header>
+    <div class="flex items-center gap-2">
+      <!-- <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle" /> -->
+      <span class="font-bold">Edit: {{hostId}}</span>
+    </div>
+  </ng-template>
+
+  <app-entity-table-builder #entityTableBuilder [hostId]="hostId!"></app-entity-table-builder>
+  
+  <ng-template #footer>
+    <div class="flex items-center justify-end ">
+      <button pButton label="Save" icon="pi pi-save" severity="success" (click)="entityTableBuilder.onSaveSpec(); editTableDrawer.close($event)"></button>
+    </div>
+  </ng-template>
 </p-drawer>
 
-<p-drawer [(visible)]="showRowDrawer" #editTableDrawer [header]="rowDrawerHeader" position="right" styleClass="!w-full md:!w-80 lg:!w-[60rem]">
+<p-drawer [dismissible]="false" [(visible)]="showRowDrawer" #rowDrawer position="right" styleClass="!w-full md:!w-80 lg:!w-[60rem]">
+  <ng-template #header>
+    <div class="flex items-center gap-2">
+      <!-- <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle" /> -->
+      @if (entityForm.editMode) {
+        <p-tag severity="danger">
+          <div class="flex items-center justify-between gap-2 p-1">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>EDIT FORM</span>
+          </div>
+        </p-tag>
+        <span class="font-bold">{{hostId}}</span>
+      } @else {
+        <p-tag [severity]="entityForm.modeSeverity" class="mr-2">
+          <div class="flex items-center justify-between gap-2 p-1">
+            <i class="{{entityForm.modeIcon}}"></i>
+            <span>{{entityForm.mode | uppercase}}</span>
+
+            @if (entityForm.entityId) {
+              <div class="flex items-center justify-between gap-2 p-1 ml-2">
+                <i class="pi pi-hashtag"></i>
+                <span>{{entityForm.entityId}}</span>
+              </div>
+            }
+          </div>
+        </p-tag>
+        <span class="font-bold">{{hostId}}</span>
+      }
+    </div>
+  </ng-template>
+
   <app-entity-form #entityForm [hostId]="hostId!"></app-entity-form>
+
+  <ng-template #footer>
+    <div class="flex items-center justify-between gap-4">
+      @if (entityForm.editMode) {
+        <button pButton text label="Cancel" icon="pi pi-times" severity="danger" (click)="entityForm.onEditForm();"></button>
+        <button pButton label="Save Changes" icon="pi pi-save" severity="success" (click)="entityForm.onSaveSpec();"></button>
+      } @else {
+        @if (!entityForm.readonly) {
+          <button pButton text label="Edit Layout" icon="pi pi-pen-to-square" (click)="entityForm.onEditForm();"></button>
+          <button pButton label="Save Changes" icon="pi pi-save" severity="success" (click)="rowDrawer.close($event)"></button>
+        }
+      }
+    </div>
+  </ng-template>
+</p-drawer>
+
+<p-drawer [(visible)]="showRelationRowDrawer" #relationRowDrawer position="right" styleClass="!w-full md:!w-80 lg:!w-[60rem]">
+  <ng-template #header>
+    <div class="flex items-center gap-2">
+      <p-tag severity="info" class="mr-2">
+        <div class="flex items-center justify-between gap-2 p-1">
+          <i class="pi pi-eye"></i>
+          <span>VIEW</span>
+
+          @if (relationRowForm.entityId) {
+            <div class="flex items-center justify-between gap-2 p-1 ml-2">
+              <i class="pi pi-hashtag"></i>
+              <span>{{relationRowForm.entityId}}</span>
+            </div>
+          }
+        </div>
+      </p-tag>
+      <span class="font-bold">{{relationRowForm.hostId}}</span>
+    </div>
+  </ng-template>
+
+  <app-entity-form #relationRowForm></app-entity-form>
 </p-drawer>

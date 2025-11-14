@@ -65,6 +65,12 @@ export class EntityTableBuilder implements OnInit {
     { value: 'text-underline', icon: 'letter-underline' },
   ];
 
+  _textAlign = [
+    { value: 'text-align-left', icon: 'pi-align-left' },
+    { value: 'text-align-center', icon: 'pi-align-center' },
+    { value: 'text-align-right', icon: 'pi-align-right' },
+  ];
+
   @Input() hostId!: string;
   schemaName!: string;
   tableName!: string;

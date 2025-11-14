@@ -15,7 +15,7 @@ export interface FormlyFieldProps extends CoreFormlyFieldProps {
       @if (props.label && props.hideLabel !== true) {
         <label [for]="id">
           {{ props.label }}
-          @if (props.required && props.hideRequiredMarker !== true) {
+          @if (form.enabled && props.required && props.hideRequiredMarker !== true) {
             <span class="text-red-600" aria-hidden="true">*</span>
           }
         </label>

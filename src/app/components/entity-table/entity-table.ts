@@ -2,14 +2,14 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, Input, ViewChild } from '@angular/core';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { Table, TableModule } from 'primeng/table';
+import { Table, TableColumnReorderEvent, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { MockData } from '../../services/mock-data';
 import { ButtonGroupModule } from 'primeng/buttongroup';
 import { ButtonModule } from 'primeng/button';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { PanelModule } from 'primeng/panel';
-import { TableSpec } from '../../interfaces/table-spec.interface';
+import { TableColumnSpec, TableSpec } from '../../interfaces/table-spec.interface';
 import { FormsModule } from '@angular/forms';
 import { Drawer, DrawerModule } from 'primeng/drawer';
 import { FieldsetModule } from 'primeng/fieldset';
@@ -61,8 +61,11 @@ export class EntityTable {
   }
 
   @ViewChild('table') table!: Table;
-  @ViewChild('editTableDrawer') editFieldDrawer!: Drawer;
+  @ViewChild('rowDrawer') rowDrawer!: Drawer;
+  @ViewChild('editTableDrawer') editTableDrawer!: Drawer;
+  @ViewChild('entityTableBuilder', { static: false }) entityTableBuilder!: EntityTableBuilder;
   @ViewChild('entityForm', { static: false }) entityForm!: EntityForm;
+  @ViewChild('relationRowForm', { static: false }) relationRowForm!: EntityForm;
 
   @Input() hostId!: string;
   schemaName!: string;
@@ -74,12 +77,13 @@ export class EntityTable {
   loading = false;
   filterValue: string = '';
 
-  showEditTableSpecDrawer: boolean = false;
-
-  rowDrawerHeader: string = 'View Entry';
   showRowDrawer: boolean = false;
+  showEditTableSpecDrawer: boolean = false;
+  showRelationRowDrawer: boolean = false;
 
   _tableActions: any[] = [];
+
+  relationRowHostId?: string;
 
   ngOnInit(): void {
     if (this.hostId) {
@@ -152,12 +156,20 @@ export class EntityTable {
     this.showEditTableSpecDrawer = true;
   }
 
-  onRefresh() {
-    // TODO: Implement refresh logic
+  onRefresh(): void {
+    if (!this.table) {
+      console.warn('Table reference not available for refresh');
+      return;
+    }
+
+    // Get the current lazy load state from the table
+    const lazyLoadEvent = this.table.createLazyLoadMetadata();
+
+    // Reload items with the current state (pagination, sorting, filters)
+    this.loadItems(lazyLoadEvent);
   }
 
   onViewRow(event: Event, rowData: any) {
-    this.rowDrawerHeader = 'View Entry';
     this.entityForm.readonly = true;
     this.entityForm.entityId = rowData[this.mockDataSvc.tableInfo[this.hostId!].primary_key];
     this.entityForm.refreshData();
@@ -165,22 +177,40 @@ export class EntityTable {
   }
 
   onCreateRow(event: Event) {
-    this.rowDrawerHeader = 'Create Entry';
+    this.entityForm.entityId = undefined;
     this.entityForm.readonly = false;
     this.entityForm.clearData();
     this.showRowDrawer = true;
   }
 
   onEditRow(event: Event, rowData: any) {
-    this.rowDrawerHeader = 'Edit Entry';
-    this.entityForm.readonly = false;
     this.entityForm.entityId = rowData[this.mockDataSvc.tableInfo[this.hostId!].primary_key];
+    this.entityForm.readonly = false;
     this.entityForm.refreshData();
     this.showRowDrawer = true;
   }
 
   onExportCSV() {
     this.table.exportCSV({ allValues: true, })
+  }
+
+  onViewRelation(col: TableColumnSpec, relatedId: any) {
+    console.log(col, relatedId);
+    this.relationRowForm.hostId = col.relationTo!;
+    this.relationRowForm.readonly = true;
+    this.relationRowForm.entityId = relatedId;
+    this.relationRowForm.refreshFormSpec();
+    this.relationRowForm.refreshData();
+    this.showRelationRowDrawer = true;
+  }
+
+  async onColReorder(event: TableColumnReorderEvent) {
+    console.log('Columns reordered:', event);
+    const _dragElement = this.tableSpec.columns.splice(event.dragIndex!, 1)[0];
+    this.tableSpec.columns.splice(event.dropIndex!, 0, _dragElement);
+    console.log('Updated tableSpec:', this.tableSpec);
+    await this.mockDataSvc.onSaveTableSpec(this.hostId, this.tableSpec);
+    this.cd.detectChanges();
   }
 
 }

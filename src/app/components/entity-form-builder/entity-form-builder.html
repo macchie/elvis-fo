@@ -80,12 +80,7 @@
       </div>
     </div>
   } 
-
-</div>
-<br>
-<div class="flex flex-row items-between justify-between">
-  <p-button (click)="onAddField()">Add Field</p-button>
-  <p-button (click)="onSave()" severity="success">Save Form</p-button>
+  <p-button text fluid class="col-span-12" (click)="onAddField()">Add Field</p-button>
 </div>
 
 <p-drawer [(visible)]="_showDrawer" #editFieldDrawer [header]="_formSpec.fields[_currentFieldIdx] ? _formSpec.fields[_currentFieldIdx].key + '' : ''" position="right" styleClass="!w-full md:!w-80 lg:!w-[35rem]">

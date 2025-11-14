@@ -1,7 +1,7 @@
 <div id="entity-table-builder">
-  <div class="flex flex-row items-center justify-end mb-4">
+  <!-- <div class="flex flex-row items-center justify-end mb-4">
     <p-button size="small" icon="pi pi-save" label="Save" severity="success" (click)="onSaveSpec()" />
-  </div>
+  </div> -->
   <p-tabs value="0">
     <p-tablist>
       <p-tab value="0">Options</p-tab>
@@ -63,38 +63,39 @@
             </div>
           
             @if (col.type === 'relation') {
-            <div class="flex flex-row items-center justify-stretch gap-4 mb-4">
-              <p-floatlabel variant="on" class="flex-1">
-                <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name"
-                  optionValue="name" [(ngModel)]="col.relationTo" [disabled]="col.hidden"
-                  (ngModelChange)="col.relationToField = undefined; col.relationToDisplayField = undefined;" />
-                <label for="toEntity">To Entity</label>
-              </p-floatlabel>
-              @if (col.relationTo) {
-              <p-floatlabel variant="on" class="flex-1">
-                <p-select fluid [disabled]="col.hidden || !col.relationTo"
-                  [options]="mockDataSvc.tableInfo[col.relationTo!].columns" [filter]="true" filterBy="name" optionLabel="name"
-                  optionValue="name" [(ngModel)]="col.relationToField" />
-                <label for="toField">To Field</label>
-              </p-floatlabel>
-              <p-floatlabel variant="on" class="flex-1">
-                <p-select fluid [disabled]="col.hidden || !col.relationTo"
-                  [options]="mockDataSvc.tableInfo[col.relationTo!].columns" [filter]="true" filterBy="name" optionLabel="name"
-                  optionValue="name" [(ngModel)]="col.relationToDisplayField" />
-                <label for="displayField">Display Field</label>
-              </p-floatlabel>
-              } @else {
-              <div class="flex-2"></div>
-              }
-            </div>
+              <div class="flex flex-row items-center justify-stretch gap-4 mb-4">
+                <p-floatlabel variant="on" class="flex-1">
+                  <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name"
+                    optionValue="name" [(ngModel)]="col.relationTo" [disabled]="col.hidden"
+                    (ngModelChange)="col.relationToField = undefined; col.relationToDisplayField = undefined;" />
+                  <label for="toEntity">To Entity</label>
+                </p-floatlabel>
+
+                @if (col.relationTo) {
+                  <p-floatlabel variant="on" class="flex-1">
+                    <p-select fluid [disabled]="col.hidden || !col.relationTo"
+                      [options]="mockDataSvc.tableInfo[col.relationTo!].columns" [filter]="true" filterBy="name" optionLabel="name"
+                      optionValue="name" [(ngModel)]="col.relationToField" />
+                    <label for="toField">To Field</label>
+                  </p-floatlabel>
+                  <p-floatlabel variant="on" class="flex-1">
+                    <p-select fluid [disabled]="col.hidden || !col.relationTo"
+                      [options]="mockDataSvc.tableInfo[col.relationTo!].columns" [filter]="true" filterBy="name" optionLabel="name"
+                      optionValue="name" [(ngModel)]="col.relationToDisplayField" />
+                    <label for="displayField">Display Field</label>
+                  </p-floatlabel>
+                } @else {
+                  <div class="flex-2"></div>
+                }
+              </div>
             }
           
-            <div class="flex flex-row items-center justify-stretch bg-white gap-4 p-2 rounded-lg">
+            <div class="flex flex-row items-center justify-stretch bg-white gap-2 p-2 rounded-lg">
               @if (col.type !== 'image') {
-              <p-toggleswitch id="isPrimaryKey" [(ngModel)]="col.isPrimaryKey" [disabled]="col.hidden" />
+                <p-toggleswitch id="isPrimaryKey" [(ngModel)]="col.isPrimaryKey" [disabled]="col.hidden" />
               }
-              <p-selectbutton class="flex-3" fluid size="small" [options]="_colors" [(ngModel)]="col.color"
-                [disabled]="col.hidden">
+
+              <p-selectbutton class="flex-1" fluid size="small" [options]="_colors" [(ngModel)]="col.color" [disabled]="col.hidden">
                 <ng-template #item let-color>
                   <i class="pi pi-circle-on color-{{color}}"></i>
                 </ng-template>
@@ -102,7 +103,13 @@
               <p-selectbutton class="flex-1" fluid size="small" [options]="_formatting" [(ngModel)]="col.formatting"
                 [disabled]="col.hidden" optionValue="value" [multiple]="true">
                 <ng-template #item let-formatting>
-                  <img src="assets/icons/{{formatting.icon}}.svg" />
+                  <img src="assets/icons/{{formatting.icon}}.svg" style="height: 1rem;" />
+                </ng-template>
+              </p-selectbutton>
+              <p-selectbutton class="flex-1" fluid size="small" [options]="_textAlign" [(ngModel)]="col.formatting"
+                [disabled]="col.hidden" optionValue="value">
+                <ng-template #item let-textAlign>
+                  <i class="pi {{textAlign.icon}}"></i>
                 </ng-template>
               </p-selectbutton>
             </div>

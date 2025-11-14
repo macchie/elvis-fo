@@ -33,9 +33,17 @@ export class EntityForm implements OnInit {
   formSpec!: FormSpec;
 
   @ViewChild('formlyForm', { static: false }) 
-  formlyFormComponent!: FormlyForm;
+  formlyForm!: FormlyForm;
 
-  showFormEditor: boolean = false;
+  @ViewChild('entityFormBuilder', { static: false }) 
+  entityFormBuilder!: EntityFormBuilder;
+
+  editMode: boolean = false;
+
+  mode: string = 'create';
+  modeIcon: string = 'pi pi-circle-off';
+  modeSeverity: "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | null | undefined = 'secondary';
+  title: string = 'Entity Form';
 
   constructor(
     private mockDataSvc: MockData,
@@ -67,6 +75,7 @@ export class EntityForm implements OnInit {
         this.form.enable();
       }
 
+      this.setMeta();
       this.cd.detectChanges();
     }
   }
@@ -84,6 +93,7 @@ export class EntityForm implements OnInit {
         this.form.enable();
       }
       this.model = await this.mockDataSvc.getEntity(this.hostId, this.entityId);
+      this.setMeta();
       this.cd.detectChanges();
     }
   }
@@ -100,9 +110,34 @@ export class EntityForm implements OnInit {
 
   onEditForm() {
     console.log('Form Spec:', this.formSpec);
-    this.showFormEditor = !this.showFormEditor;
-    if (!this.showFormEditor) {
+    this.editMode = !this.editMode;
+    if (!this.editMode) {
       this.refreshFormSpec();
+    }
+  }
+
+  async onSaveSpec() {
+    await this.entityFormBuilder.onSave();
+    this.editMode = false;
+    this.editMode = false;
+  }
+
+  private setMeta() {
+    if (this.entityId !== undefined) {
+      this.mode = this.readonly ? 'view' : 'edit';
+      this.modeIcon = this.readonly ? 'pi pi-eye' : 'pi pi-pen-to-square';
+      this.modeSeverity = this.readonly ? 'info' : 'warn';
+      this.title = this.hostId;
+
+      if (this.model) {
+        const pkField = this.mockDataSvc.tableInfo[this.hostId].primary_key;
+        this.title += ` (#${this.model[pkField]})`;
+      }
+    } else {
+      this.mode = 'create';
+      this.modeIcon = 'pi pi-plus';
+      this.modeSeverity = 'success';
+      this.title = this.hostId;
     }
   }
   
