@@ -5,10 +5,20 @@
   @for (_field of _formSpec.fields; track $index;) {
     <div
       #fieldSpec
+      pDraggable
+      (onDragStart)="onDragStart($event, _field, $index)"
+      (onDragEnd)="onDragEnd($event)"
       id="field-spec"
       class="p-2 {{_field.className}}"
       (contextmenu)="openContextMenu($event, _field, $index)"
     >
+      <!-- [style]="{ 'display': $index === _draggingFieldIndex ? 'none' : 'block' }" -->
+      @if (isDragging) {
+        <div pDroppable class="drop-zone" (onDrop)="onDrop($event, $index)"> </div>
+        <!-- <div pDroppable class="drop-zone end" (onDrop)="onDrop($event, $index, true)"> </div> -->
+        <!-- <div class="drop-zone after bg-blue-500">
+                </div> -->
+      }
       <div id="toolbar" class="flex flex-row items-end justify-between" [class.mb-2]="_field.type != 'spacer'">
         <p-select
           [options]="stateOptions" optionLabel="label" 

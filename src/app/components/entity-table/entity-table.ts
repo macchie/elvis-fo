@@ -126,6 +126,7 @@ export class EntityTable {
     const filterField = this.filterValue ? 'name' : undefined;
     const filterValue = this.filterValue ? this.filterValue.trim() : undefined;
 
+    console.log('Event:', event);
     console.log('Loading items with params:', this.schemaName, this.tableName, offset, limit, sortField, sortOrder, filterField, filterValue);
 
     this.mockDataSvc.fetchItems<Item>(this.schemaName, this.tableName, this.tableSpec, offset, limit, sortField, sortOrder, filterField, filterValue)
@@ -186,7 +187,7 @@ export class EntityTable {
   onEditRow(event: Event, rowData: any) {
     this.entityForm.entityId = rowData[this.mockDataSvc.tableInfo[this.hostId!].primary_key];
     this.entityForm.readonly = false;
-    this.entityForm.refreshData();
+    this.entityForm.refreshData()
     this.showRowDrawer = true;
   }
 

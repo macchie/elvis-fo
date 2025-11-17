@@ -12,6 +12,7 @@
 
 #field-spec {
   /* background: var(--p-primary-100); */
+  position: relative;
   width: 100%;
   border-radius: 6px;
   box-sizing: border-box;
@@ -19,5 +20,27 @@
 
   label {
     margin-bottom: 8px;
+  }
+
+  .drop-zone {
+    position: absolute;
+    top: -8px;
+    bottom: -8px;
+    left: -1.6rem;
+    width: 2rem;
+    /* height: 100%; */
+    border: 2px dashed var(--p-primary-500);
+    background-color: rgba(0, 0, 0, 0.05);
+    z-index: 10;
+    border-radius: .33rem;
+
+    &::hover {
+      background-color: var(--p-primary-500);
+    }
+
+    &.end {
+      right: -1.6rem;
+      left: auto;
+    }
   }
 }
