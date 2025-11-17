@@ -45,6 +45,8 @@ export class EntityForm implements OnInit {
   modeSeverity: "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | null | undefined = 'secondary';
   title: string = 'Entity Form';
 
+  loading: boolean = false;
+
   constructor(
     private mockDataSvc: MockData,
     private cd: ChangeDetectorRef,
@@ -93,6 +95,7 @@ export class EntityForm implements OnInit {
 
   async refreshData() {
     if (this.hostId && this.entityId !== undefined) {
+      this.loading = true;
       if (this.readonly) {
         this.form.disable();
       } else {
@@ -100,6 +103,7 @@ export class EntityForm implements OnInit {
       }
       this.model = await this.mockDataSvc.getEntity(this.hostId, this.entityId);
       this.setMeta();
+      this.loading = false;
       this.cd.detectChanges();
     }
   }

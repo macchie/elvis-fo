@@ -20,6 +20,8 @@ import { Drawer, DrawerModule } from 'primeng/drawer';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { Subject } from 'rxjs';
 import { FormSpec } from '../../interfaces/form-spec.interface';
+import { DragDropModule } from 'primeng/dragdrop';
+import { FormlyFieldConfig } from '@ngx-formly/core';
 
 
 export const FieldType = {
@@ -56,6 +58,7 @@ export const FieldType = {
     MultiSelectModule,
     DrawerModule,
     AutoCompleteModule,
+    DragDropModule,
   ],
   templateUrl: './entity-form-builder.html',
   styleUrl: './entity-form-builder.css',
@@ -222,6 +225,44 @@ export class EntityFormBuilder implements OnInit {
     if (typeof product === 'string') {
       return { name: product, custom: true };
     }
+  }
+
+  isDragging: boolean = false;
+  _draggingFieldIndex: number = -1;
+
+  onDragStart(event: DragEvent, _field: FormlyFieldConfig, _index: number) {
+    console.log('Drag Start for field:', _index, event, _field);
+    this._draggingFieldIndex = _index;
+    this.isDragging = true;
+  }
+
+  onDragEnd(event: DragEvent) {
+    console.log('Drag End for field:', event);
+    this._draggingFieldIndex = -1;
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent, _index: number, _endSide: boolean = false) {
+    console.log('Drop event:', _index, event);
+    if (this._draggingFieldIndex === -1 || this._draggingFieldIndex === _index) {
+      this.isDragging = false;
+      return;
+    }
+
+    const draggedField = this._formSpec.fields[this._draggingFieldIndex];
+    // Remove dragged field from its original position
+    this._formSpec.fields.splice(this._draggingFieldIndex, 1);
+    // Insert dragged field at the new position
+
+    if (_endSide) {
+      _index = _index - 1;
+    }
+
+    this._formSpec.fields.splice(_index, 0, draggedField);
+
+    this._draggingFieldIndex = -1;
+
+    this.isDragging = false;
   }
 
   // private

@@ -61,14 +61,17 @@
       @for (col of tableSpec.columns; track col.field) {
         @if (!col.hidden) {
           <th pReorderableColumn [pSortableColumn]="col.type != 'image' ? col.field : undefined" [style]="{ 'min-width': (col.type === 'barcode' ? '100px' : ''), 'width': (col.type === 'image' ? '50px' : '')}">
-            <div class="flex flex-row items-center justify-between">
+            <div class="flex flex-row items-center justify-between gap-4">
               <div class="flex flex-row items-center gap-2">
-                @if (col.type === 'image') {
-                } @else {
-                  <span style="white-space: pre;">{{col.header}}</span>
+                @if (col.type !== 'image') {
                   <p-sortIcon [field]="col.field" />
+                  <span style="white-space: pre;">{{col.header}}</span>
                 }
               </div>
+
+              @if (col.type !== 'relation') {
+                <p-columnFilter type="text" prefix="ciao" [field]="col.field" display="menu" />
+              }
             </div>
           </th>
         }
@@ -167,7 +170,6 @@
 <p-drawer [dismissible]="entityForm.readonly" [(visible)]="showRowDrawer" #rowDrawer position="right" styleClass="!w-full md:!w-80 lg:!w-[60rem]">
   <ng-template #header>
     <div class="flex items-center gap-2">
-      <!-- <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle" /> -->
       @if (entityForm.editMode) {
         <p-tag severity="danger">
           <div class="flex items-center justify-between gap-2 p-1">
