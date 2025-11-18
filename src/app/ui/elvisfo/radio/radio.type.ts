@@ -1,9 +1,11 @@
 import { Component, ChangeDetectionStrategy, Type } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { FieldType, FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
-import { FormlyFieldProps } from '../form-field/form-field.wrapper';
 
-type RadioProps = FormlyFieldProps;
+
+interface RadioProps {
+  options?: Array<{ label: string; value: any; disabled?: boolean }>;
+}
 
 export interface FormlyRadioFieldConfig extends FormlyFieldConfig<RadioProps> {
   type: 'radio' | Type<FormlyFieldRadio>;

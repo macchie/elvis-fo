@@ -230,20 +230,52 @@ export class EntityFormBuilder implements OnInit {
 
   async onSave() {
     console.log('Form Spec to Save:', this._formSpec);
-    for (const _spec of this._formSpec.fields) {
-      if (!_spec.props!.label || _spec.props!.label.trim() === '') {
-        _spec.props!.label = _spec.key as string;
-      }
-      delete _spec['id'];
-    }
+    this.prepareForSave();
     this.mockDataSvc.onSaveFormSpec(this.hostId!, this._formSpec);
     this.mockDataSvc.formSpecs[this.hostId!] = this._formSpec;
     this.formSpecSaved.next();
   }
 
+  prepareForSave(_fields: ElvisFormlyFieldConfig[] = this._formSpec.fields, _wrapWith?: string) {
+    for (const _fieldSpec of _fields) {
+      delete _fieldSpec.id;
+
+      if (_fieldSpec.__builderType === 'layout') {
+        delete _fieldSpec['type'];
+        _fieldSpec.wrappers = [];
+
+        if (_wrapWith) {
+          _fieldSpec.wrappers = [_wrapWith];
+        } 
+
+        if (_fieldSpec.__builderWrapper) {
+          _fieldSpec.wrappers.push(_fieldSpec.__builderWrapper);
+        }
+        
+        if (_fieldSpec.__builderWrapper === 'accordion') {
+          this.prepareForSave(_fieldSpec.fieldGroup as ElvisFormlyFieldConfig[], 'accordion-tab');
+        } else {
+          this.prepareForSave(_fieldSpec.fieldGroup as ElvisFormlyFieldConfig[]);
+        }
+      }
+
+      if (_fieldSpec.__builderType === 'input') {
+        delete _fieldSpec['fieldGroup'];
+        delete _fieldSpec['__builderWrapper'];
+        if (_wrapWith) {
+          _fieldSpec.wrappers = [_wrapWith];
+        } 
+      }
+
+      if (!_fieldSpec.props!.label || _fieldSpec.props!.label.trim() === '') {
+        _fieldSpec.props!.label = _fieldSpec.key as string;
+      }
+    }
+  }
+
   getProductLabel(product: any): string {
     if (typeof product === 'string') {
-        return product;
+      return product;
     }
 
     return product?.name || '';

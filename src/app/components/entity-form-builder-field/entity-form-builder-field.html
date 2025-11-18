@@ -1,10 +1,10 @@
 
 <p-contextmenu #contextMenu [model]="fieldContextMenuItems" />
 
-<div id="field-spec" class="p-2 bg-primary-100" >
+<div id="field-spec" class="p-2 bg-primary-100 rounded-xl" >
   <!-- (contextmenu)="openContextMenu($event, field)" -->
 
-  <div id="toolbar" class="flex flex-row items-center justify-between p-2" [class.mb-2]="true">
+  <div id="toolbar" class="flex flex-row items-center justify-between px-1" [class.mb-2]="true">
     <div class="flex flex-row items-center justify-between gap-4">
       @if (field.__builderType === 'layout') {
         @if (field.type === 'panel') {
@@ -45,7 +45,7 @@
 
   <div class="flex flex-col gap-2">
     @if (field.__builderType === 'layout') {
-      @if (field.wrappers == 'panel') {
+      @if (field.__builderWrapper == 'panel') {
         @for (_groupField of field.fieldGroup; track $index) {
           <app-entity-form-builder-field [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup" class="{{field.className}}"></app-entity-form-builder-field>
         }
@@ -54,32 +54,34 @@
         </div>
       }
 
-      @if (field.wrappers == 'accordion') {
+      @if (field.__builderWrapper == 'accordion') {
         <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
           <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
         </div>
 
-        <div class="p-2 bg-primary-100 rounded-lg">
+        <div class=" bg-primary-100 rounded-lg">
           <p-accordion [value]="0">
             @for (_groupField of field.fieldGroup; track $index) {
-            <p-accordion-panel [value]="$index">
-              <p-accordion-header>{{ _groupField.key }}</p-accordion-header>
-              <p-accordion-content>
-                <app-entity-form-builder-field class="p-2 {{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
-              </p-accordion-content>
-            </p-accordion-panel>
+              <p-accordion-panel [value]="$index">
+                <p-accordion-header>{{ _groupField.key }}</p-accordion-header>
+                <p-accordion-content>
+                  <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
+                </p-accordion-content>
+              </p-accordion-panel>
             }
           </p-accordion>
         </div>
       }
 
-      @if (field.wrappers == 'card') {
-        <p-card class="grid grid-cols-12 gap-2">
-          @for (_groupField of field.fieldGroup; track $index) {
-            <app-entity-form-builder-field class="p-2 {{field.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
-          }
-          <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
+      @if (field.__builderWrapper == 'card') {
+        <p-card>
+          <div class="grid grid-cols-12 gap-4">
+            @for (_groupField of field.fieldGroup; track $index) {
+              <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
+            }
+            <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg col-span-12">
+              <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
+            </div>
           </div>
         </p-card>
       }
@@ -141,16 +143,14 @@
 
         @if (field.__builderType === 'layout') {
           <p-floatlabel class="flex-1" variant="on">
-            <p-select fluid [options]="layoutFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.wrappers" />
+            <p-select fluid [options]="layoutFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.__builderWrapper" />
             <label for="key">Layout Type</label>
           </p-floatlabel>
         }
 
         @if (field.__builderType === 'input') {
           <p-floatlabel class="flex-1"  variant="on">
-            <p-select [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name"
-              optionValue="code" placeholder="Select Field Type" [(ngModel)]="field.type"
-              (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)" />
+            <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name" optionValue="code" placeholder="Select Field Type" [(ngModel)]="field.type" (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)" />
             <label for="key">Input Type</label>
           </p-floatlabel>
         }

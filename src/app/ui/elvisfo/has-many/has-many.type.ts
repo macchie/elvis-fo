@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy, Type, OnInit } from '@angular/core';
-import { FieldType, FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
-import { FormlyFieldProps } from '../form-field/form-field.wrapper';
+import { FieldType, FieldTypeConfig, FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
 
 interface HasManyProps extends FormlyFieldProps {
   disabled?: boolean;

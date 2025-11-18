@@ -7,7 +7,6 @@ export function withFormlyFieldRadio(): ConfigOption {
       {
         name: 'radio',
         component: FormlyFieldRadio,
-        wrappers: ['form-field'],
       },
     ],
   };

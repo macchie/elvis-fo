@@ -5,7 +5,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DatePickerModule } from 'primeng/datepicker';
 import { FormlyFieldDatepicker } from './datepicker.type';
 import { withFormlyFieldDatepicker } from './datepicker.config';
-import { FormlyFormFieldModule } from '../form-field/form-field.module';
 
 @NgModule({
   declarations: [
@@ -16,7 +15,6 @@ import { FormlyFormFieldModule } from '../form-field/form-field.module';
     FormsModule,
     ReactiveFormsModule,
     DatePickerModule,
-    FormlyFormFieldModule,
     FormlyModule.forChild(withFormlyFieldDatepicker()),
   ],
 })

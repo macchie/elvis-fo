@@ -81,6 +81,12 @@ form {
       /* width: 100%; */
       /* grid-column: 1 / -1; */
     }
+
+    p-accordion {
+      formly-group {
+        gap: 0;
+      }
+    }
   }
 }
 

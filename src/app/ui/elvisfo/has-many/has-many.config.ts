@@ -8,7 +8,6 @@ export function withFormlyFieldHasMany(): ConfigOption {
       {
         name: 'has-many',
         component: FormlyFieldHasMany,
-        wrappers: ['form-field'],
       },
     ],
   };

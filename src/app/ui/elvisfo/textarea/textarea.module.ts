@@ -5,7 +5,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
 import { FormlyFieldTextArea } from './textarea.type';
 import { withFormlyFieldTextArea } from './textarea.config';
-import { FormlyFormFieldModule } from '../form-field/form-field.module';
 
 @NgModule({
   declarations: [
@@ -15,7 +14,6 @@ import { FormlyFormFieldModule } from '../form-field/form-field.module';
     CommonModule,
     ReactiveFormsModule,
     TextareaModule,
-    FormlyFormFieldModule,
     FormlyModule.forChild(withFormlyFieldTextArea()),
   ],
 })

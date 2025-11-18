@@ -7,7 +7,6 @@ export function withFormlyFieldSelect(): ConfigOption {
       {
         name: 'select',
         component: FormlyFieldSelect,
-        wrappers: ['form-field'],
       },
       { name: 'enum', extends: 'select' },
     ],

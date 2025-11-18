@@ -8,7 +8,6 @@ export function withFormlyFieldBelongsTo(): ConfigOption {
       {
         name: 'belongs-to',
         component: FormlyFieldBelongsTo,
-        wrappers: ['form-field'],
       },
     ],
   };

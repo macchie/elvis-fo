@@ -1,10 +1,10 @@
 
 <p-contextmenu #contextMenu [model]="fieldContextMenuItems" />
 
-<div id="builder-content" #builderContent class="grid grid-cols-12 gap-4 p-2">
+<div id="builder-content" #builderContent class="grid grid-cols-12">
   @for (_field of _formSpec.fields; track $index;) {
     <app-entity-form-builder-field 
-      class="p-2 {{_field.className}}" 
+      class="{{_field.className}}" 
       pDraggable 
       (onDragStart)="onDragStart($event, _field, $index)" 
       (onDragEnd)="onDragEnd($event)" 
@@ -14,7 +14,7 @@
     ></app-entity-form-builder-field>
   } 
 
-  <div class="px-2 flex flex-row justify-center col-span-12">
+  <div class="flex flex-row justify-center col-span-12">
     <div class="flex flex-row flex-1 items-center py-2 justify-center border-2 border-dashed border-surface-300 rounded-lg">
       <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
     </div>

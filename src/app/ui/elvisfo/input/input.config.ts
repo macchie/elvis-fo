@@ -8,7 +8,6 @@ export function withFormlyFieldInput(): ConfigOption {
       {
         name: 'input',
         component: FormlyFieldInput,
-        wrappers: ['form-field'],
       },
       { name: 'string', extends: 'input' },
       {

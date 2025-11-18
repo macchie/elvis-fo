@@ -6,7 +6,7 @@ export function withFormlyCardWrapper(): ConfigOption {
   return {
     wrappers: [
       {
-        name: 'form-field',
+        name: 'card',
         component: FormlyCardWrapper,
       },
     ],

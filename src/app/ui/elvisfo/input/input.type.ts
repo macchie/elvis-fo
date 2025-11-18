@@ -1,8 +1,10 @@
 import { Component, ChangeDetectionStrategy, Type } from '@angular/core';
-import { FieldType, FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
-import { FormlyFieldProps } from '../form-field/form-field.wrapper';
+import { FieldType, FieldTypeConfig, FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
 
 interface InputProps extends FormlyFieldProps {
+  hideRequiredMarker?: boolean;
+  hideLabel?: boolean;
+  colSize?: 12 | 6 | 4;
   helpText?: string;
   prefixIcon?: string;
   suffixIcon?: string;
@@ -20,6 +22,15 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<InputProps> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './input.type.scss',
   template: `
+    <div class="mb-2">
+      <label [for]="id">
+        {{ props.label || key }}
+        @if (form.enabled && props.required && props.hideRequiredMarker !== true) {
+          <span class="text-red-600" aria-hidden="true">*</span>
+        }
+      </label>
+    </div>
+
     <p-inputgroup>
       @if (props.prefixIcon || props.prefixText) {
         <p-inputgroup-addon>
@@ -57,6 +68,12 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<InputProps> {
     
     @if (props.helpText) {
       <small [innerHTML]="props.helpText"></small>
+    }
+
+    @if (showError) {
+      <small class="p-error">
+        <formly-validation-message class="ui-message-text" [field]="field"></formly-validation-message>
+      </small>
     }
   `,
 })

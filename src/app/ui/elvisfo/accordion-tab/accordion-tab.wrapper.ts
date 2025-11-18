@@ -8,15 +8,16 @@ export interface FormlyFieldProps extends CoreFormlyFieldProps {
 }
 
 @Component({
-  selector: 'formly-wrapper-elvisfo-card-wrapper',
-  styleUrl: './card-wrapper.wrapper.scss',
+  selector: 'formly-wrapper-elvisfo-accordion-tab-wrapper',
+  styleUrl: './accordion-tab.wrapper.scss',
   template: `
-    <p-card class="mt-0">
-      <div class="flex flex-col gap-2">
+    <p-accordion-panel value="{{key}}">
+      <p-accordion-header>{{key}}</p-accordion-header>
+      <p-accordion-content>
         <ng-container #fieldComponent></ng-container>
-      </div>
-    </p-card>
+      </p-accordion-content>
+    </p-accordion-panel>
   `,
   standalone: false
 })
-export class FormlyCardWrapper extends FieldWrapper<FormlyFieldConfig<FormlyFieldProps>> {}
+export class FormlyAccordionTabWrapper extends FieldWrapper<FormlyFieldConfig<FormlyFieldProps>> {}

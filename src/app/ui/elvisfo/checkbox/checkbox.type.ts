@@ -1,8 +1,10 @@
 import { Component, ChangeDetectionStrategy, Type } from '@angular/core';
-import { FieldType, FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
-import { FormlyFieldProps } from '../form-field/form-field.wrapper';
-
-interface CheckboxProps extends FormlyFieldProps {}
+import { FieldType, FieldTypeConfig, FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
+interface CheckboxProps extends FormlyFieldProps {
+  hideRequiredMarker?: boolean;
+  hideLabel?: boolean;
+  colSize?: 12 | 6 | 4;
+}
 
 export interface FormlyCheckboxFieldConfig extends FormlyFieldConfig<CheckboxProps> {
   type: 'checkbox' | Type<FormlyFieldCheckbox>;
@@ -11,7 +13,7 @@ export interface FormlyCheckboxFieldConfig extends FormlyFieldConfig<CheckboxPro
 @Component({
   selector: 'formly-field-primeng-checkbox',
   template: `
-    <div class="flex flex-row items-center justify-end pt-10 mb-1">
+    <div class="flex flex-row items-center justify-end">
       <label [for]="id" class="m-0 p-0 mr-4">{{ props.label }}</label>
       <p-toggleswitch [id]="id" [inputId]="id" [formControl]="formControl" [formlyAttributes]="field" />
     </div>

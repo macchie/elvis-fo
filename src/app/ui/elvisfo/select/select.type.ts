@@ -2,9 +2,8 @@ import { Component, ChangeDetectionStrategy, Type, OnInit } from '@angular/core'
 import { FieldType, FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
 import { FormlyFieldSelectProps } from '@ngx-formly/core/select';
 import { Select } from 'primeng/select';
-import { FormlyFieldProps } from '../form-field/form-field.wrapper';
 
-interface SelectProps extends FormlyFieldProps, FormlyFieldSelectProps {
+interface SelectProps extends FormlyFieldSelectProps {
   appendTo?: Select['appendTo'];
   filter?: boolean;
   filterBy?: string;

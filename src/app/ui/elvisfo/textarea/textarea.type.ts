@@ -1,8 +1,7 @@
 import { Component, ChangeDetectionStrategy, Type } from '@angular/core';
 import { FieldType, FieldTypeConfig, FormlyFieldConfig } from '@ngx-formly/core';
-import { FormlyFieldProps } from '../form-field/form-field.wrapper';
 
-interface TextAreaProps extends FormlyFieldProps {}
+interface TextAreaProps {}
 
 export interface FormlyTextAreaFieldConfig extends FormlyFieldConfig<TextAreaProps> {
   type: 'textarea' | Type<FormlyFieldTextArea>;

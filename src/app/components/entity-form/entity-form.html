@@ -28,13 +28,15 @@
     @if (editMode && !readonly) {
       <app-entity-form-builder #entityFormBuilder [hostId]="hostId" (formSpecSaved)="onEditForm()"></app-entity-form-builder>
     } @else {
-      <!-- <form [formGroup]="form">
-        <formly-form #formlyForm 
-          [form]="form"
-          [fields]="formSpec?.fields || []"
-          [model]="model"
-        ></formly-form>
-      </form> -->
+      <form [formGroup]="form">
+        @if (form && formSpec) {
+          <formly-form #formlyForm 
+            [form]="form"
+            [fields]="formSpec?.fields || []"
+            [model]="model"
+          ></formly-form>
+        }
+      </form>
     }
   }
 </div>

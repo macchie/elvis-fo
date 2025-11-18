@@ -4,7 +4,6 @@ import { FormlyModule } from '@ngx-formly/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 
-import { FormlyFormFieldModule } from '../form-field/form-field.module';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { FormlyFieldBelongsTo } from './belongs-to.type';
@@ -21,7 +20,6 @@ import { PopoverModule } from 'primeng/popover';
     CommonModule,
     ReactiveFormsModule,
     FormlyModule.forChild(withFormlyFieldBelongsTo()),
-    FormlyFormFieldModule,
     ButtonModule,
     ButtonGroup,
     InputTextModule,

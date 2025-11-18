@@ -8,7 +8,6 @@ export function withFormlyFieldCheckbox(): ConfigOption {
       {
         name: 'checkbox',
         component: FormlyFieldCheckbox,
-        wrappers: ['form-field'],
       },
       {
         name: 'boolean',

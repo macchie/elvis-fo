@@ -7,7 +7,6 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 import { FormlyFieldCheckbox } from './checkbox.type';
 import { withFormlyFieldCheckbox } from './checkbox.config';
-import { FormlyFormFieldModule } from '../form-field/form-field.module';
 
 @NgModule({
   declarations: [
@@ -18,7 +17,6 @@ import { FormlyFormFieldModule } from '../form-field/form-field.module';
     ReactiveFormsModule,
     CheckboxModule,
     ToggleSwitchModule,
-    FormlyFormFieldModule,
     FormlyModule.forChild(withFormlyFieldCheckbox()),
   ],
 })

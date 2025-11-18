@@ -4,7 +4,6 @@ import { FormlyModule } from '@ngx-formly/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 
-import { FormlyFormFieldModule } from '../form-field/form-field.module';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { FormlyFieldHasMany } from './has-many.type';
@@ -22,7 +21,6 @@ import { TableModule } from 'primeng/table';
     CommonModule,
     ReactiveFormsModule,
     FormlyModule.forChild(withFormlyFieldHasMany()),
-    FormlyFormFieldModule,
     ButtonModule,
     ButtonGroup,
     InputTextModule,

@@ -2,18 +2,20 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormlyModule, FormlyValidationMessage } from '@ngx-formly/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { FormlyWrapperFormField } from './form-field.wrapper';
-import { withFormlyFormField } from './form-field.config';
+import { FormlyPanelWrapper } from './panel-wrapper.wrapper';
+import { withFormlyPanelWrapper } from './panel-wrapper.config';
+import { CardModule } from 'primeng/card';
 
 @NgModule({
   declarations: [
-    FormlyWrapperFormField
+    FormlyPanelWrapper
   ],
   imports: [
     CommonModule, 
     ReactiveFormsModule, 
     FormlyValidationMessage,
-    FormlyModule.forChild(withFormlyFormField())
+    FormlyModule.forChild(withFormlyPanelWrapper()),
+    CardModule
   ],
 })
-export class FormlyFormFieldModule {}
+export class FormlyPanelWrapperModule {}
