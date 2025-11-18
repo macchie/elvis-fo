@@ -1,5 +1,8 @@
 import { FormlyFieldConfig } from "@ngx-formly/core";
 
+export interface ElvisFormlyFieldConfig extends FormlyFieldConfig {
+  __builderType?: 'input' | 'layout';
+}
 export interface FormSpec {
-  fields: FormlyFieldConfig[];
+  fields: ElvisFormlyFieldConfig[];
 }

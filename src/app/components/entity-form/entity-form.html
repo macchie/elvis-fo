@@ -1,15 +1,40 @@
+
+@if (!hideHeader) {
+  <p-toolbar class="mb-4">
+    <ng-template #start>
+      <div class="flex flex-row items-center justify-between gap-4">
+        <p-tag [severity]="editMode ? 'warn' : 'secondary'">{{hostId}}</p-tag>
+      </div>
+    </ng-template>
+    <ng-template #center>
+      <!-- <p><b>{{ items.length }}</b> of <b>{{ totalRecords }}</b> records</p> -->
+    </ng-template>
+    <ng-template #end>
+      <div class="flex flex-row items-center justify-between gap-4">
+        @if (!editMode && !readonly) {
+          <p-button outlined="" size="small" label="Edit Form Layout" icon="pi pi-pencil" severity="warn" (click)="onEditForm()" ></p-button>
+          <p-button size="small" label="Save" icon="pi pi-save" severity="success" ></p-button>
+        } @else if (editMode) {
+          <p-button size="small" label="Undo Changes" icon="pi pi-times" severity="secondary" (click)="onEditForm()" ></p-button>
+          <p-button size="small" label="Save Layout" icon="pi pi-save" severity="warn" (click)="onSaveSpec()" ></p-button>
+        }
+      </div>
+    </ng-template>
+  </p-toolbar>
+}
+
 <div id="entity-form" class="bg-primary-50 rounded-lg p-4">
   @if (!loading) {
     @if (editMode && !readonly) {
       <app-entity-form-builder #entityFormBuilder [hostId]="hostId" (formSpecSaved)="onEditForm()"></app-entity-form-builder>
     } @else {
-      <form [formGroup]="form">
+      <!-- <form [formGroup]="form">
         <formly-form #formlyForm 
           [form]="form"
           [fields]="formSpec?.fields || []"
           [model]="model"
         ></formly-form>
-      </form>
+      </form> -->
     }
   }
 </div>

@@ -6,7 +6,7 @@ export function withFormlyFieldSpacer(): ConfigOption {
   return {
     types: [
       {
-        name: 'spacer',
+        name: 'panel',
         component: FormlyFieldSpacer,
       },
     ],

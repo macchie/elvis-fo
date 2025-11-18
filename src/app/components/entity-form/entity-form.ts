@@ -6,6 +6,9 @@ import { MockData } from '../../services/mock-data';
 import { ButtonModule } from 'primeng/button';
 import { EntityFormBuilder } from '../entity-form-builder/entity-form-builder';
 import { FormSpec } from '../../interfaces/form-spec.interface';
+import { ToolbarModule } from 'primeng/toolbar';
+import { TagModule } from 'primeng/tag';
+import { SplitButtonModule } from 'primeng/splitbutton';
 
 @Component({
   selector: 'app-entity-form',
@@ -15,7 +18,10 @@ import { FormSpec } from '../../interfaces/form-spec.interface';
     ReactiveFormsModule,
     FormlyForm,
     ButtonModule,
-    EntityFormBuilder
+    EntityFormBuilder,
+    ToolbarModule,
+    TagModule,
+    SplitButtonModule
   ],
   templateUrl: './entity-form.html',
   styleUrl: './entity-form.css',
@@ -28,6 +34,8 @@ export class EntityForm implements OnInit {
   @Input() hostId!: string;
   @Input() entityId!: string | number | undefined;
   @Input() readonly!: boolean;
+  @Input() hideHeader!: boolean;
+  @Input() hideFooter!: boolean;
   schemaName!: string;
   tableName!: string;
   formSpec!: FormSpec;
@@ -47,6 +55,8 @@ export class EntityForm implements OnInit {
 
   loading: boolean = false;
 
+  _formActions: any[] = [];
+
   constructor(
     private mockDataSvc: MockData,
     private cd: ChangeDetectorRef,
@@ -55,6 +65,8 @@ export class EntityForm implements OnInit {
   }
 
   async ngOnInit() {
+    this.buildFormActions();
+
     this.form = new FormGroup({});
 
     if (this.hostId) {
@@ -121,6 +133,7 @@ export class EntityForm implements OnInit {
   onEditForm() {
     console.log('Form Spec:', this.formSpec);
     this.editMode = !this.editMode;
+    this.buildFormActions();
     if (!this.editMode) {
       this.refreshFormSpec();
     }
@@ -149,6 +162,26 @@ export class EntityForm implements OnInit {
       this.modeSeverity = 'success';
       this.title = this.hostId;
     }
+  }
+
+  private buildFormActions() {
+    this._formActions = [
+      // {
+      //   label: 'Export CSV',
+      //   icon: 'pi pi-file-export',
+      //   command: () => {
+      //     // this.onExportCSV();
+      //   },
+      // },
+      // { separator: true, },
+      {
+        label: this.editMode ? 'Exit Editing' : 'Edit Form Layout',
+        icon: `pi ${this.editMode ? 'pi-times' : 'pi-pen-to-square'}`,
+        command: () => {
+          this.onEditForm();
+        },
+      },
+    ];
   }
   
 }

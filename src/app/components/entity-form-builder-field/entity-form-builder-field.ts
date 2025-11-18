@@ -24,7 +24,6 @@ import { DragDropModule } from 'primeng/dragdrop';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { CardModule } from 'primeng/card';
 import { AccordionModule } from 'primeng/accordion';
-import { EntityFormBuilderField } from '../entity-form-builder-field/entity-form-builder-field';
 
 
 export const FieldType = {
@@ -41,7 +40,7 @@ export const FieldType = {
 }
 
 @Component({
-  selector: 'app-entity-form-builder',
+  selector: 'app-entity-form-builder-field',
   imports: [
     CommonModule,
     FormsModule,
@@ -63,13 +62,17 @@ export const FieldType = {
     AutoCompleteModule,
     DragDropModule,
     CardModule,
-    AccordionModule,
-    EntityFormBuilderField
+    AccordionModule
   ],
-  templateUrl: './entity-form-builder.html',
-  styleUrl: './entity-form-builder.css',
+  templateUrl: './entity-form-builder-field.html',
+  styleUrl: './entity-form-builder-field.css',
 })
-export class EntityFormBuilder implements OnInit {
+export class EntityFormBuilderField implements OnInit {
+
+  // new 
+
+  @Input() field!: ElvisFormlyFieldConfig | any;
+  @Input() fieldGroup: ElvisFormlyFieldConfig[] | any;
 
   @Input() hostId?: string;
   @Output() formSpecChange: Subject<void> = new Subject<void>();
@@ -77,7 +80,6 @@ export class EntityFormBuilder implements OnInit {
 
   public _formSpec!: any;
   public _currentFieldIdx: number = -1;
-  public _currentEditingField: ElvisFormlyFieldConfig | null = null;
   public _showDrawer: boolean = false;
 
   @ViewChild('editFieldPopover') editFieldPopover!: Popover;
@@ -95,7 +97,19 @@ export class EntityFormBuilder implements OnInit {
   ];
 
   fieldList: TableColumnInfo[] = [];
-  fieldTypes: { code: string, name: string }[] = [];
+  // fieldTypes: { code: string, name: string }[] = [];
+  fieldTypes: { code: string, name: string }[] = [
+    FieldType.INPUT,
+    FieldType.PASSWORD,
+    FieldType.INTEGER,
+    FieldType.TEXTAREA,
+    FieldType.SELECT,
+    FieldType.CHECKBOX,
+    FieldType.RADIO,
+    FieldType.DATE,
+    FieldType.BELONGS_TO,
+    FieldType.HAS_MANY,
+  ];
 
   onChangeTypes: Record<string, string>[] = [
     { label: 'Do Nothing', value: 'NONE' },
@@ -138,6 +152,8 @@ export class EntityFormBuilder implements OnInit {
       console.log(`Table Column Info for Host ID ${this.hostId}:`, this.mockDataSvc.tableInfo[this.hostId]);
     }
 
+    this.field.fieldGroup = this.field.fieldGroup || [];
+
     console.log('EntityFormBuilder Fields:', this.fieldList);
   }
 
@@ -166,25 +182,19 @@ export class EntityFormBuilder implements OnInit {
   onAddField() {
     console.log('Add Field Clicked!');
     const _newField = this._getNewField();
-    this._formSpec.fields.push(_newField);
+    this.field.fieldGroup.push(_newField);
     this.formSpecChange.next();
   }
 
-  onEditField(index: number, _fields: FormlyFieldConfig[] = this._formSpec.fields) {
-    console.log('Edit Field Clicked!', index);
-    this._currentFieldIdx = index;
-    if (!_fields[index]) {
-      _fields[index] = this._getNewField();
-    }
-    this._currentEditingField = _fields[index];
-    this._setFieldTypesForField(index);
+  onEditField() {
+    console.log('Edit Field Clicked!', this.field);
 
-    if (_fields[index] && _fields[index].type === 'belongs-to') {
-      if (!_fields[index].props) {
-        _fields[index].props = {};
+    if (this.field && this.field.type === 'belongs-to') {
+      if (!this.field.props) {
+        this.field.props = {};
       }
-      _fields[index].props['fromEntity'] = this.hostId;
-      _fields[index].props['fromField'] = _fields[index].key;
+      this.field.props['fromEntity'] = this.hostId;
+      this.field.props['fromField'] = this.field.key;
     }
 
     // this.editFieldPopover.show(event);
@@ -192,22 +202,22 @@ export class EntityFormBuilder implements OnInit {
     this._showDrawer = true;
   }
 
-  onRemoveField(_field: FormlyFieldConfig, _fields: FormlyFieldConfig[]) {
-    console.log('Remove Field Clicked!', _field, _fields);
-    _fields = _fields.filter(f => f.id != _field.id);
-    // this.formSpecChange.next();
-    // const _spec = _fields[index];
-    // _fields.splice(index, 1);
-    // if (_spec && _spec.type !== 'panel') {
-    //   this._resetField(index);
-    // } else {
-    // }
+  onRemoveField() {
+    console.log('Remove Field Clicked!', this.field);
+    // this.fieldGroup = this.fieldGroup.filter((f: any) => f.id !== this.field);
+
+    const fieldIndex = this.fieldGroup.findIndex((f: any) => f === this.field);
+    if (fieldIndex !== -1) {
+      this.fieldGroup.splice(fieldIndex, 1);
+    }
+
+    this.formSpecChange.next();
   }
 
   onChangeFieldKey(index: number, event: any) {
     console.log('Field Key Changed:', index, event);
-    this._resetField(index);
-    this._setFieldTypesForField(index);
+    // this._resetField();
+    this._setFieldTypesForField();
     // this._disableUsedFieldSpecs();
   }
 
@@ -328,11 +338,10 @@ export class EntityFormBuilder implements OnInit {
     }));
   }
 
-  private _setFieldTypesForField(_index: number) {
-    if (!this._formSpec || this._formSpec.fields.length === 0 || !this._formSpec.fields[_index]) return;
+  private _setFieldTypesForField() {
 
     try {
-      const _columnInfo = this.fieldList.find(f => f.name === this._formSpec.fields[_index].key);
+      const _columnInfo = this.fieldList.find(f => f.name === this.field.key);
       console.log('Column Info for field:', _columnInfo);
       
       if (!_columnInfo) throw new Error('Column info not found');
@@ -343,13 +352,13 @@ export class EntityFormBuilder implements OnInit {
             FieldType.INTEGER,
             FieldType.BELONGS_TO,
           ];
-          if (!this._formSpec.fields[_index].type || this._formSpec.fields[_index].type === 'panel') {
+          if (!this.field.type || this.field.type === 'panel') {
             if (_columnInfo.foreign_keys && _columnInfo.foreign_keys.length > 0) {
-              this._formSpec.fields[_index].type = FieldType.BELONGS_TO.code;
-              this._formSpec.fields[_index].props!['fromEntity'] = this.hostId;
-              this._formSpec.fields[_index].props!['fromField'] = this._formSpec.fields[_index].key;
+              this.field.type = FieldType.BELONGS_TO.code;
+              this.field.props!['fromEntity'] = this.hostId;
+              this.field.props!['fromField'] = this.field.key;
             } else {
-              this._formSpec.fields[_index].type = FieldType.INTEGER.code;
+              this.field.type = FieldType.INTEGER.code;
             }
           }
           break;
@@ -358,8 +367,8 @@ export class EntityFormBuilder implements OnInit {
             FieldType.CHECKBOX,
             FieldType.BELONGS_TO,
           ];
-          if (!this._formSpec.fields[_index].type || this._formSpec.fields[_index].type === 'panel') {
-            this._formSpec.fields[_index].type = FieldType.CHECKBOX.code;
+          if (!this.field.type || this.field.type === 'panel') {
+            this.field.type = FieldType.CHECKBOX.code;
           }
           break;
         case 'timestamp with time zone':
@@ -368,8 +377,8 @@ export class EntityFormBuilder implements OnInit {
             FieldType.DATE,
             FieldType.INPUT,
           ];
-          if (!this._formSpec.fields[_index].type || this._formSpec.fields[_index].type === 'panel') {
-            this._formSpec.fields[_index].type = FieldType.DATE.code;
+          if (!this.field.type || this.field.type === 'panel') {
+            this.field.type = FieldType.DATE.code;
           }
           break;
         default:
@@ -385,8 +394,8 @@ export class EntityFormBuilder implements OnInit {
             FieldType.BELONGS_TO,
             FieldType.HAS_MANY,
           ];
-          if (!this._formSpec.fields[_index].type || this._formSpec.fields[_index].type === 'panel') {
-            this._formSpec.fields[_index].type = FieldType.INPUT.code;
+          if (!this.field.type || this.field.type === 'panel') {
+            this.field.type = FieldType.INPUT.code;
           }
           break;
       }
@@ -395,11 +404,10 @@ export class EntityFormBuilder implements OnInit {
     }
   }
 
-  private _resetField(_index: number) {
-    if (!this._formSpec || this._formSpec.fields.length === 0 || !this._formSpec.fields[_index]) return;
-    this._formSpec.fields[_index].__builderType = 'layout';
-    this._formSpec.fields[_index].type = 'panel';
-    this._formSpec.fields[_index].fieldGroup = [];
-    this._formSpec.fields[_index].props = {};
+  private _resetField() {
+    this.field.__builderType = 'layout';
+    this.field.type = 'panel';
+    this.field.fieldGroup = [];
+    this.field.props = {};
   }
 }

@@ -21,6 +21,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { EntityTable } from './components/entity-table/entity-table';
 import { SelectModule } from 'primeng/select';
 import { PanelModule } from 'primeng/panel';
+import { EntityForm } from './components/entity-form/entity-form';
 
 
 @Component({
@@ -45,7 +46,8 @@ import { PanelModule } from 'primeng/panel';
     MultiSelectModule,
     EntityTable,
     SelectModule,
-    PanelModule
+    PanelModule,
+    EntityForm
 ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
