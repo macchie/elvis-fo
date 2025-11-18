@@ -21,7 +21,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { Subject } from 'rxjs';
 import { ElvisFormlyFieldConfig, FormSpec } from '../../interfaces/form-spec.interface';
 import { DragDropModule } from 'primeng/dragdrop';
-import { FormlyFieldConfig } from '@ngx-formly/core';
+import { FormlyField, FormlyFieldConfig } from '@ngx-formly/core';
 import { CardModule } from 'primeng/card';
 import { AccordionModule } from 'primeng/accordion';
 import { EntityFormBuilderField } from '../entity-form-builder-field/entity-form-builder-field';
@@ -97,28 +97,6 @@ export class EntityFormBuilder implements OnInit {
   fieldList: TableColumnInfo[] = [];
   fieldTypes: { code: string, name: string }[] = [];
 
-  onChangeTypes: Record<string, string>[] = [
-    { label: 'Do Nothing', value: 'NONE' },
-    { label: 'Clear Fields', value: 'CLEAR_FIELDS' },
-  ];
-
-  builderFieldTypes: Record<string, string>[] = [
-    { label: 'Layout Element', value: 'layout' },
-    { label: 'Input Element', value: 'input' },
-  ];
-  
-  layoutFieldTypes: Record<string, string>[] = [
-    { label: 'Panel', value: 'panel' },
-    { label: 'Accordion', value: 'accordion' },
-    { label: 'Accordion Tab', value: 'accordion-tab' },
-    { label: 'Card', value: 'card' },
-    { label: 'Panel', value: 'panel' },
-    { label: 'Stepper', value: 'stepper' },
-    { label: 'Step', value: 'step' },
-    { label: 'Tabs', value: 'tabs' },
-    { label: 'Tab', value: 'tab' },
-  ];
-
   constructor(
     public mockDataSvc: MockData
   ) {
@@ -126,7 +104,6 @@ export class EntityFormBuilder implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('EntityFormBuilder Host ID:', this.hostId);
     
     if (this.hostId) {
       try {
@@ -135,10 +112,8 @@ export class EntityFormBuilder implements OnInit {
       } catch (error) {
         this._formSpec = { fields: []  };
       }
-      console.log(`Table Column Info for Host ID ${this.hostId}:`, this.mockDataSvc.tableInfo[this.hostId]);
     }
 
-    console.log('EntityFormBuilder Fields:', this.fieldList);
   }
 
   openContextMenu(event: MouseEvent, _field: any, _index: number): void {
@@ -171,7 +146,6 @@ export class EntityFormBuilder implements OnInit {
   }
 
   onEditField(index: number, _fields: FormlyFieldConfig[] = this._formSpec.fields) {
-    console.log('Edit Field Clicked!', index);
     this._currentFieldIdx = index;
     if (!_fields[index]) {
       _fields[index] = this._getNewField();
@@ -193,15 +167,7 @@ export class EntityFormBuilder implements OnInit {
   }
 
   onRemoveField(_field: FormlyFieldConfig, _fields: FormlyFieldConfig[]) {
-    console.log('Remove Field Clicked!', _field, _fields);
     _fields = _fields.filter(f => f.id != _field.id);
-    // this.formSpecChange.next();
-    // const _spec = _fields[index];
-    // _fields.splice(index, 1);
-    // if (_spec && _spec.type !== 'panel') {
-    //   this._resetField(index);
-    // } else {
-    // }
   }
 
   onChangeFieldKey(index: number, event: any) {
@@ -225,18 +191,19 @@ export class EntityFormBuilder implements OnInit {
       _field.props['toEntity'] = '';
       _field.props['fromField'] = _field.key;
       _field.props['toField'] = '';
+      _field.props['displayField'] = '';
     }
   } 
 
   async onSave() {
-    console.log('Form Spec to Save:', this._formSpec);
     this.prepareForSave();
+    console.log('Saving Form Spec for Entity:', this.hostId, this._formSpec);
     this.mockDataSvc.onSaveFormSpec(this.hostId!, this._formSpec);
     this.mockDataSvc.formSpecs[this.hostId!] = this._formSpec;
     this.formSpecSaved.next();
   }
 
-  prepareForSave(_fields: ElvisFormlyFieldConfig[] = this._formSpec.fields, _wrapWith?: string) {
+  prepareForSave(_fields: ElvisFormlyFieldConfig[] = this._formSpec.fields) {
     for (const _fieldSpec of _fields) {
       delete _fieldSpec.id;
 
@@ -244,31 +211,36 @@ export class EntityFormBuilder implements OnInit {
         delete _fieldSpec['type'];
         _fieldSpec.wrappers = [];
 
-        if (_wrapWith) {
-          _fieldSpec.wrappers = [_wrapWith];
-        } 
-
         if (_fieldSpec.__builderWrapper) {
           _fieldSpec.wrappers.push(_fieldSpec.__builderWrapper);
         }
         
-        if (_fieldSpec.__builderWrapper === 'accordion') {
-          this.prepareForSave(_fieldSpec.fieldGroup as ElvisFormlyFieldConfig[], 'accordion-tab');
-        } else {
-          this.prepareForSave(_fieldSpec.fieldGroup as ElvisFormlyFieldConfig[]);
-        }
+        this.prepareForSave(_fieldSpec.fieldGroup);
       }
 
       if (_fieldSpec.__builderType === 'input') {
         delete _fieldSpec['fieldGroup'];
         delete _fieldSpec['__builderWrapper'];
-        if (_wrapWith) {
-          _fieldSpec.wrappers = [_wrapWith];
-        } 
       }
 
       if (!_fieldSpec.props!.label || _fieldSpec.props!.label.trim() === '') {
         _fieldSpec.props!.label = _fieldSpec.key as string;
+      }
+
+      _fieldSpec.expressions = {};
+      
+      if (_fieldSpec.__builderRules && _fieldSpec.__builderRules.length > 0) {
+        for (const _rule of _fieldSpec.__builderRules) {
+          const _expressionKey = _rule.type === 'disabled' ? 'props.disabled' : 'hide';
+
+          _fieldSpec.expressions[_expressionKey] = (_field: FormlyFieldConfig) => {
+            if (_rule.condition === 'IS NULL') {
+              return _field.form?.get(_rule.field!)?.value ? false : true;
+            } else {
+              return _field.form?.get(_rule.field!)?.value ? true : false;
+            }
+          }
+        }
       }
     }
   }

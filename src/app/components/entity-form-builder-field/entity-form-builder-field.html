@@ -9,13 +9,13 @@
       @if (field.__builderType === 'layout') {
         @if (field.type === 'panel') {
           <i class="pi pi-expand"></i>
-        }        
+        }
         @if (field.type === 'card') {
-          <i class="pi pi-stop"></i>
-        }        
+          <i class="pi pi-clone"></i>
+        }
         @if (field.type === 'accordion') {
           <i class="pi pi-bars"></i>
-        }        
+        }
       } @else {
         @if (field.type === 'input') {
           <i class="pi pi-pen-to-square"></i>
@@ -60,7 +60,7 @@
         </div>
 
         <div class=" bg-primary-100 rounded-lg">
-          <p-accordion [value]="0">
+          <p-accordion>
             @for (_groupField of field.fieldGroup; track $index) {
               <p-accordion-panel [value]="$index">
                 <p-accordion-header>{{ _groupField.key }}</p-accordion-header>
@@ -70,6 +70,39 @@
               </p-accordion-panel>
             }
           </p-accordion>
+        </div>
+      }
+
+      @if (field.__builderWrapper == 'tabs') {
+        <div class=" bg-primary-100 rounded-lg">
+          <p-tabs [value]="0">
+            <p-tablist>
+              @for (_groupField of field.fieldGroup; track $index) {
+                <p-tab [value]="$index">{{ _groupField.props?.label || _groupField.key }}</p-tab>
+              }
+            </p-tablist>
+            <p-tabpanels>
+              @for (_groupField of field.fieldGroup; track $index) {
+                <p-tabpanel [value]="$index">
+                  <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
+                </p-tabpanel>
+              }
+            </p-tabpanels>
+          </p-tabs>
+
+          <!-- @for (_groupField of field.fieldGroup; track $index) {
+            <p-accordion-panel [value]="$index">
+              <p-accordion-header>{{ _groupField.key }}</p-accordion-header>
+              <p-accordion-content>
+                <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField"
+                  [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
+              </p-accordion-content>
+            </p-accordion-panel>
+          } -->
+        </div>
+
+        <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+          <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
         </div>
       }
 
@@ -122,76 +155,85 @@
       }
 
       @if (field.type == 'belongs-to') {
-        <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
-          <p-button disabled icon="pi pi-eye" variant="outlined" severity="info" />
-          <p-button fluid disabled class="grow" [label]="field.props!.placeholder || 'Select'" variant="outlined" severity="secondary" />
-          <p-button disabled icon="pi pi-times" variant="outlined"
-            severity="danger" />
-        </p-buttongroup>
+        @if (field.props.mode == 'select') {
+          <p-select fluid disabled placeholder="Select"></p-select>
+        } @else {
+          <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
+            <p-button disabled icon="pi pi-eye" variant="outlined" severity="info" />
+            <p-button fluid disabled class="grow" [label]="field.props!.placeholder || 'Select'" variant="outlined" severity="secondary" />
+            <p-button disabled icon="pi pi-times" variant="outlined"
+              severity="danger" />
+          </p-buttongroup>
+        }
       }
     }
   </div>
 </div>
 
-<p-drawer [(visible)]="_showDrawer" #editFieldDrawer [header]="field.__builderType === 'layout' ? field.wrappers : field.type" position="right" styleClass="!w-full md:!w-80 lg:!w-[35rem]">
+<p-drawer [(visible)]="_showDrawer" #editFieldDrawer [header]="field.props!.label || field.type" position="right" styleClass="!w-full md:!w-80 lg:!w-[50rem]">
   <div class="flex flex-col gap-4">
-    <div class="flex flex-col gap-2">
-      <span class="font-medium block mb-2"><b>Field Options</b></span>
-
-      <div class="flex flex-row items-center justify-between gap-4 mb-4">
-        <p-select [options]="builderFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.__builderType" />
-
-        @if (field.__builderType === 'layout') {
-          <p-floatlabel class="flex-1" variant="on">
-            <p-select fluid [options]="layoutFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.__builderWrapper" />
-            <label for="key">Layout Type</label>
+    <p-fieldset legend="Options" [toggleable]="false">
+      <div class="flex flex-col gap-6 mt-2">
+        <div class="flex flex-row items-center justify-between gap-4">
+          <p-floatlabel class="flex-2" variant="on">
+            <p-select fluid [options]="builderFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.__builderType" />
+            <label for="key">Type</label>
           </p-floatlabel>
-        }
-
-        @if (field.__builderType === 'input') {
-          <p-floatlabel class="flex-1"  variant="on">
-            <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name" optionValue="code" placeholder="Select Field Type" [(ngModel)]="field.type" (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)" />
-            <label for="key">Input Type</label>
+  
+          @if (field.__builderType === 'layout') {
+            <p-floatlabel class="flex-3" variant="on">
+              <p-select fluid [options]="layoutFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.__builderWrapper" />
+              <label for="key">Layout Type</label>
+            </p-floatlabel>
+          }
+  
+          @if (field.__builderType === 'input') {
+            <p-floatlabel class="flex-3"  variant="on">
+              <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name" optionValue="code" placeholder="Select Field Type" [(ngModel)]="field.type" (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)" />
+              <label for="key">Input Type</label>
+            </p-floatlabel>
+          }
+        </div>
+  
+        @if (field.__builderType === 'layout') {
+          <p-floatlabel variant="on">
+            <input pInputText fluid type="text" placeholder="Field Label" [(ngModel)]="field.props!.label" />
+            <label for="key">Label</label>
           </p-floatlabel>
         }
       </div>
 
-      @if (field.__builderType === 'input') {
-        <span class="font-medium block mb-3"><b>Field Properties</b></span>
-        
-        <div class="flex flex-row items-center justify-end mb-4">
-          <label for="readonly" class="m-0 p-0 mr-2">Read Only</label>
-          <p-toggleswitch id="readonly" class="mr-6" [(ngModel)]="field.props!.readonly" (ngModelChange)="field.props!.disabled = false" />
-          <label for="disabled" class="m-0 p-0 mr-2">Disabled</label>
-          <p-toggleswitch id="disabled" [(ngModel)]="field.props!.disabled" (ngModelChange)="field.props!.readonly = false" />
-        </div>
-        
-        <p-floatlabel variant="on" class="mb-2">
-          <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="field.key"
-            (ngModelChange)="onChangeFieldKey(_currentFieldIdx, $event)" />
-          <label for="key">Column Name</label>
-        </p-floatlabel>
-    
-        
-        <p-floatlabel variant="on" class="mb-2">
-          <input pInputText fluid type="text" placeholder="Field Label" [(ngModel)]="field.props!.label" />
-          <label for="key">Label:</label>
-        </p-floatlabel>
-        <p-floatlabel variant="on" class="mb-2">
-          <input pInputText fluid type="text" placeholder="Field Placeholder" [(ngModel)]="field.props!.placeholder" />
-          <label for="key">Placeholder</label>
-        </p-floatlabel>
+    </p-fieldset>
 
-        @if (!field.props!.readonly && !field.props!.disabled) {
-          <span class="font-medium block mb-3">Field Validations</span>
-
-          <div class="flex flex-row items-center justify-end mb-4">
+    @if (field.__builderType === 'input') {
+      <p-fieldset legend="Properties" [toggleable]="false">
+        <div class="flex flex-col gap-6 mt-2">
+          <div class="flex flex-row items-center justify-end">
             <label for="required" class="m-0 p-0 mr-2">Required</label>
-            <p-toggleswitch id="required" [(ngModel)]="field.props!.required" />
+            <p-toggleswitch id="required" class="mr-6" [(ngModel)]="field.props!.required" />
+            <label for="readonly" class="m-0 p-0 mr-2">Read Only</label>
+            <p-toggleswitch id="readonly" class="mr-6" [(ngModel)]="field.props!.readonly" (ngModelChange)="field.props!.disabled = false" />
+            <label for="disabled" class="m-0 p-0 mr-2">Disabled</label>
+            <p-toggleswitch id="disabled" [(ngModel)]="field.props!.disabled" (ngModelChange)="field.props!.readonly = false" />
           </div>
-
+          
+          <p-floatlabel variant="on">
+            <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="field.key"
+              (ngModelChange)="onChangeFieldKey(_currentFieldIdx, $event)" />
+            <label for="key">Column Name</label>
+          </p-floatlabel>
+      
+          <p-floatlabel variant="on">
+            <input pInputText fluid type="text" placeholder="Field Label" [(ngModel)]="field.props!.label" />
+            <label for="key">Label:</label>
+          </p-floatlabel>
+          <p-floatlabel variant="on">
+            <input pInputText fluid type="text" placeholder="Field Placeholder" [(ngModel)]="field.props!.placeholder" />
+            <label for="key">Placeholder</label>
+          </p-floatlabel>
+    
           @if (field.type == 'input' || field.type == 'password') {
-            <div class="flex flex-row items-center justify-stretch mb-2 gap-4">
+            <div class="flex flex-row items-center justify-stretch gap-4">
               <p-floatlabel variant="on">
                 <input pInputText fluid type="text" placeholder="Min Length" [(ngModel)]="field.props!.minLength" />
                 <label for="minLength">Min Length</label>
@@ -202,9 +244,9 @@
               </p-floatlabel>
             </div>
           }
-
+    
           @if (field.type == 'integer') {
-            <div class="flex flex-row items-center justify-stretch mb-2 gap-4">
+            <div class="flex flex-row items-center justify-stretch gap-4">
               <p-floatlabel variant="on">
                 <input pInputText fluid type="number" placeholder="Min Value" [(ngModel)]="field.props!.min" />
                 <label for="minValue">Min Value</label>
@@ -215,64 +257,109 @@
               </p-floatlabel>
             </div>
           }
+        </div>
+      </p-fieldset>
+    }
 
-          <p-divider />
+    @if (field.__builderType === 'input') {
+      @if (field.type == 'belongs-to') {
+        <p-fieldset legend="Belongs To Options" [toggleable]="false">
+          <div class="flex flex-col gap-6 mt-2">
+            <p-floatlabel variant="on">
+              <p-select fluid [options]="[{ label: 'Select', value: 'select'}, { label: 'Dialog', value: 'dialog'}]"
+                optionLabel="label" optionValue="value" [(ngModel)]="field.props!['mode']" />
+              <label for="mode">Mode</label>
+            </p-floatlabel>
+        
+            <p-floatlabel variant="on">
+              <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name"
+                optionValue="name" [(ngModel)]="field.props!['toEntity']" (ngModelChange)="field.props!['toField'] = null" />
+              <label for="toEntity">With Entity</label>
+            </p-floatlabel>
+        
+            @if (field.props!['toEntity']) {
+            <div class="flex flex-row items-center justify-between gap-4">
+              <p-floatlabel variant="on" class="flex-3">
+                <p-select fluid [disabled]="!field.props!['toEntity']"
+                  [options]="mockDataSvc.tableInfo[field.props!['toEntity']].columns" [filter]="true" filterBy="name"
+                  optionLabel="name" optionValue="name" [(ngModel)]="field.props!['toField']" />
+                <!-- <input pInputText fluid type="text" placeholder="To Field"  [(ngModel)]="field.props.toField" /> -->
+                <label for="toField">Value Field</label>
+              </p-floatlabel>
+        
+              <p-floatlabel variant="on" class="flex-2">
+                <p-select fluid [disabled]="!field.props!['toEntity']"
+                  [options]="mockDataSvc.tableInfo[field.props!['toEntity']].columns" [filter]="true" filterBy="name"
+                  optionLabel="name" optionValue="name" [(ngModel)]="field.props!['displayField']" />
+                <!-- <input pInputText fluid type="text" placeholder="To Field"  [(ngModel)]="field.props.toField" /> -->
+                <label for="displayField">Label Field</label>
+              </p-floatlabel>
+            </div>
+            }
+        
+            <div class="flex flex-row items-center justify-between gap-4">
+              <p-floatlabel class="flex-3" variant="on">
+                <input pInputText fluid disabled type="text" placeholder="From Entity"
+                  [(ngModel)]="field.props!['fromEntity']" />
+                <label for="fromEntity">To</label>
+              </p-floatlabel>
+        
+              <p-floatlabel class="flex-2" variant="on">
+                <input pInputText fluid disabled type="text" placeholder="From Field" [(ngModel)]="field.props!['fromField']" />
+                <label for="fromField">Field</label>
+              </p-floatlabel>
+            </div>
+        
+          </div>
+        </p-fieldset>
+      }
+    }
 
-          <span class="font-medium block mb-3">Field Dependencies</span>
-          <p-floatlabel variant="on" class="mb-2">
-            <p-multiselect fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
-              [(ngModel)]="field.props!['dependsOnFields']" />
-            <label for="dependsOnFields">Depends on Fields</label>
-          </p-floatlabel>
 
-          <p-floatlabel variant="on" class="mb-2">
+    <p-fieldset legend="Rules" [toggleable]="false">
+      <div class="flex flex-col gap-6 mt-2">
+        @for (rule of field.__builderRules; track $index) {
+          <div class="flex flex-row items-center justify-between gap-4">
+            <p-floatlabel variant="on" class="flex-2">
+              <p-select fluid [options]="ruleTypes" optionLabel="label" optionValue="value" [(ngModel)]="rule.type" />
+              <label for="ruleType">Rule</label>
+            </p-floatlabel>
+          
+            <p-floatlabel variant="on" class="flex-4">
+              <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="rule.field" />
+              <label for="ruleField">When</label>
+            </p-floatlabel>
+
+            <p-floatlabel variant="on" class="flex-2">
+              <p-select fluid [options]="ruleConditions" optionLabel="label" optionValue="value" [(ngModel)]="rule.condition" />
+              <label for="ruleCondition">Condition</label>
+            </p-floatlabel>
+
+            <p-button text icon="pi pi-times" severity="danger" (click)="onRemoveRule($index)"></p-button>
+          </div>
+        }
+
+        <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+          <p-button size="small" text icon="pi pi-plus" label="Add Rule" (click)="onAddRule()"></p-button>
+        </div>
+  
+        <!-- <div class="flex flex-row items-center justify-between gap-4">
+          <p-floatlabel variant="on" class="flex-2">
             <p-select fluid [options]="onChangeTypes" optionLabel="label" optionValue="value"
               [(ngModel)]="field.props!['onChangeAction']" />
             <label for="fromEntity">On Change</label>
           </p-floatlabel>
-
+  
           @if (field.props!['onChangeAction'] == 'CLEAR_FIELDS') {
-            <p-floatlabel variant="on" class="mb-2">
+            <p-floatlabel variant="on" class="flex-4">
               <p-multiselect fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
                 [(ngModel)]="field.props!['onChangeClearFields']" />
               <label for="onChangeClearFields">Fields to Clear</label>
             </p-floatlabel>
           }
-        }
-    
-        @if (field.type == 'belongs-to') {
-          <p-divider></p-divider>
-          <!-- <span class="font-medium text-surface-900 dark:text-surface-0 block mb-3">Belongs To Options</span> -->
-      
-          <p-floatlabel variant="on" class="mb-2">
-            <input pInputText fluid disabled type="text" placeholder="From Entity"
-              [(ngModel)]="field.props!['fromEntity']" />
-            <label for="fromEntity">From Entity</label>
-          </p-floatlabel>
-          <p-floatlabel variant="on" class="mb-2">
-            <input pInputText fluid disabled type="text" placeholder="From Field"
-              [(ngModel)]="field.props!['fromField']" />
-            <label for="fromField">From Field</label>
-          </p-floatlabel>
-          <p-floatlabel variant="on" class="mb-2">
-            <p-select fluid [options]="mockDataSvc.tableInfoArray" [filter]="true" filterBy="name" optionLabel="name"
-              optionValue="name" [(ngModel)]="field.props!['toEntity']"
-              (ngModelChange)="field.props!['toField'] = null" />
-            <label for="toEntity">To Entity</label>
-          </p-floatlabel>
-      
-          @if (field.props!['toEntity']) {
-            <p-floatlabel variant="on" class="mb-2">
-              <p-select fluid [disabled]="!field.props!['toEntity']"
-                [options]="mockDataSvc.tableInfo[field.props!['toEntity']].columns" [filter]="true"
-                filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="field.props!['toField']" />
-              <!-- <input pInputText fluid type="text" placeholder="To Field"  [(ngModel)]="field.props.toField" /> -->
-              <label for="toField">To Field</label>
-            </p-floatlabel>
-          }
-        }
-      }
-    </div>
+        </div> -->
+      </div>
+    </p-fieldset>
   </div>
 </p-drawer>
 

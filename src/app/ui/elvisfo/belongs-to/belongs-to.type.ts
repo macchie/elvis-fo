@@ -1,12 +1,15 @@
 import { Component, ChangeDetectionStrategy, Type, OnInit } from '@angular/core';
 import { FieldType, FieldTypeConfig, FormlyFieldConfig, FormlyFieldProps } from '@ngx-formly/core';
+import { MockData } from '../../../services/mock-data';
 
 interface BelongsToProps extends FormlyFieldProps {
+  mode?: 'select' | 'default';
   disabled?: boolean;
   fromEntity?: string;
   toEntity?: string;
   fromField?: string;
   toField?: string;
+  displayField?: string;
   onChangeAction?: 'NONE' | 'CLEAR_FIELDS';
   onChangeClearFields?: string;
   dependsOnFields?: string;
@@ -22,17 +25,43 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './belongs-to.type.scss',
   template: `
+
     <input
       type="hidden"
       [formControl]="formControl"
       [formlyAttributes]="field"
     />
 
-    <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
-      <p-button (click)="onPreview()" [disabled]="!formControl.value || props.disabled" icon="pi pi-eye" variant="outlined" severity="info"/>
-      <p-button fluid (click)="onSelect(); op.toggle($event)" [disabled]="props.disabled" class="grow" [label]="formControl.value || (props.placeholder || 'Select')" variant="outlined" severity="secondary" />
-      <p-button (click)="onClear()" [disabled]="!formControl.value || props.disabled" icon="pi pi-times" variant="outlined" severity="danger" />
-    </p-buttongroup>
+    <div class="mb-2">
+      <label [for]="id">
+        {{ props.label || key }}
+        @if (form.enabled && props.required) {
+          <span class="text-red-600" aria-hidden="true">*</span>
+        }
+      </label>
+    </div>
+
+    @if (props.mode === 'select') {
+      <p-select 
+        fluid 
+        [options]="_selectOptions" 
+        [filter]="true" 
+        [filterBy]="props.displayField || props.toField" 
+        [optionLabel]="props.displayField || props.toField" 
+        [optionValue]="props.toField" 
+        [formControl]="formControl" 
+        [formlyAttributes]="field" 
+        [placeholder]="'Select'"
+        [disabled]="props.disabled!"
+        [showClear]="true"
+      />
+    } @else {
+      <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
+        <p-button (click)="onPreview()" [disabled]="!formControl.value || props.disabled" icon="pi pi-eye" variant="outlined" severity="info"/>
+        <p-button fluid (click)="onSelect(); op.toggle($event)" [disabled]="props.disabled" class="grow" [label]="formControl.value || (props.placeholder || 'Select')" variant="outlined" severity="secondary" />
+        <p-button (click)="onClear()" [disabled]="!formControl.value || props.disabled" icon="pi pi-times" variant="outlined" severity="danger" />
+      </p-buttongroup>
+    }
 
     <p-popover #op>
       <div class="flex flex-col gap-4 w-[25rem]"> </div>
@@ -44,33 +73,15 @@ export class FormlyFieldBelongsTo extends FieldType<FieldTypeConfig<BelongsToPro
   public _displayValue?: string;
   public _helpText?: string;
 
-  constructor( ) {
+  public _selectOptions: Array<{ label: string; value: string }> = [];
+
+  constructor(
+    private mockDataSvc: MockData
+  ) {
     super();
   }
 
-  ngOnInit() {
-    if (this.props.fromEntity && this.props.toEntity && this.props.fromField && this.props.toField) {
-      this._helpText = `<b>JOIN</b> ${this.props.toEntity} <b>ON</b> (from.${this.props.fromField} = to.${this.props.toField})`;
-    } else {
-      this._helpText = 'No related entity configured!';
-    }
-
-    if (this.props.dependsOnFields && this.props.dependsOnFields.length > 0) {
-      for (const _depField of this.props.dependsOnFields) {
-        this.field?.parent?.formControl?.get(_depField.trim())?.valueChanges.subscribe((_value: any) => {
-          // Implement logic to handle changes in dependent fields
-          console.log('Dependent field changed:', _depField);
-          // For example, you might want to clear the current value
-          if (!_value) {
-            this.formControl.patchValue(null);
-            this.formControl.disable();
-          } else {
-            this.formControl.enable();
-          }
-        });
-      }
-    }
-    
+  async ngOnInit() {
     if (this.props.onChangeAction) {
       if (this.props.onChangeAction == 'CLEAR_FIELDS') {
         this.formControl.valueChanges.subscribe(() => {
@@ -87,6 +98,10 @@ export class FormlyFieldBelongsTo extends FieldType<FieldTypeConfig<BelongsToPro
           }
         });
       }
+    }
+
+    if (this.props.mode === 'select') {
+      this._selectOptions = await this.mockDataSvc.getEntities(this.props.toEntity || '')
     }
   }
   

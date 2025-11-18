@@ -1,4 +1,3 @@
-import { withFormlyAccordionTabWrapper } from "./accordion-tab/accordion-tab.wrapper.config";
 import { withFormlyAccordionWrapper } from "./accordion/accordion.wrapper.config";
 import { withFormlyFieldBelongsTo } from "./belongs-to/belongs-to.config";
 import { withFormlyCardWrapper } from "./card-wrapper/card-wrapper.config";
@@ -9,13 +8,14 @@ import { withFormlyFieldInput } from "./input/input.config";
 import { withFormlyPanelWrapper } from "./panel-wrapper/panel-wrapper.config";
 import { withFormlyFieldSelect } from "./select/select.config";
 import { withFormlyFieldSpacer } from "./spacer/spacer.config";
+import { withFormlyTabsWrapper } from "./tabs/tabs.wrapper.config";
 
 export function withFormlyElvisFO() {
   return [
     withFormlyPanelWrapper(),
     withFormlyCardWrapper(),
     withFormlyAccordionWrapper(),
-    withFormlyAccordionTabWrapper(),
+    withFormlyTabsWrapper(),
     withFormlyFieldInput(),
     withFormlyFieldDatepicker(),
     withFormlyFieldCheckbox(),
@@ -23,7 +23,5 @@ export function withFormlyElvisFO() {
     withFormlyFieldSpacer(),
     withFormlyFieldBelongsTo(),
     withFormlyFieldHasMany(),
-    // withFormlyFieldTextArea(),
-    // withFormlyFieldRadio(),
   ];
 }

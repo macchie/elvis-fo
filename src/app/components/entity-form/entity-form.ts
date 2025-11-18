@@ -65,8 +65,6 @@ export class EntityForm implements OnInit {
   }
 
   async ngOnInit() {
-    this.buildFormActions();
-
     this.form = new FormGroup({});
 
     if (this.hostId) {
@@ -133,7 +131,6 @@ export class EntityForm implements OnInit {
   onEditForm() {
     console.log('Form Spec:', this.formSpec);
     this.editMode = !this.editMode;
-    this.buildFormActions();
     if (!this.editMode) {
       this.refreshFormSpec();
     }
@@ -163,25 +160,4 @@ export class EntityForm implements OnInit {
       this.title = this.hostId;
     }
   }
-
-  private buildFormActions() {
-    this._formActions = [
-      // {
-      //   label: 'Export CSV',
-      //   icon: 'pi pi-file-export',
-      //   command: () => {
-      //     // this.onExportCSV();
-      //   },
-      // },
-      // { separator: true, },
-      {
-        label: this.editMode ? 'Exit Editing' : 'Edit Form Layout',
-        icon: `pi ${this.editMode ? 'pi-times' : 'pi-pen-to-square'}`,
-        command: () => {
-          this.onEditForm();
-        },
-      },
-    ];
-  }
-  
 }

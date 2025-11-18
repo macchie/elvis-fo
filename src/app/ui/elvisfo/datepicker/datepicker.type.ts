@@ -28,6 +28,15 @@ export interface FormlyDatepickerFieldConfig extends FormlyFieldConfig<Datepicke
 @Component({
   selector: 'formly-field-primeng-datepicker',
   template: `
+    <div class="mb-2">
+      <label [for]="id">
+        {{ props.label || key }}
+        @if (form.enabled && props.required) {
+          <span class="text-red-600" aria-hidden="true">*</span>
+        }
+      </label>
+    </div>
+
     @if (!props.readonly) {
       <p-datepicker 
         fluid

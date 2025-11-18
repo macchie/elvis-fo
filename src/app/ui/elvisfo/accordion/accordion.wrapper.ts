@@ -13,7 +13,14 @@ export interface FormlyFieldProps extends CoreFormlyFieldProps {
   template: `
     <div class="p-4 bg-white rounded-xl">
       <p-accordion>
-        <ng-container #fieldComponent></ng-container>
+        @for (field of field.fieldGroup; track $index) {
+          <p-accordion-panel [value]="$index">
+            <p-accordion-header>{{field.props?.label || field.key}}</p-accordion-header>
+            <p-accordion-content>
+              <formly-field [field]="field"></formly-field>
+            </p-accordion-content>
+          </p-accordion-panel>
+        }
       </p-accordion>
     </div>
   `,

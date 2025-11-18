@@ -4,7 +4,8 @@ import { FormlyModule, FormlyValidationMessage } from '@ngx-formly/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormlyPanelWrapper } from './panel-wrapper.wrapper';
 import { withFormlyPanelWrapper } from './panel-wrapper.config';
-import { CardModule } from 'primeng/card';
+import { PanelModule } from 'primeng/panel';
+import { FieldsetModule } from 'primeng/fieldset';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { CardModule } from 'primeng/card';
     ReactiveFormsModule, 
     FormlyValidationMessage,
     FormlyModule.forChild(withFormlyPanelWrapper()),
-    CardModule
+    PanelModule,
+    FieldsetModule
   ],
 })
 export class FormlyPanelWrapperModule {}

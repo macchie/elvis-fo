@@ -11,6 +11,8 @@ import { withFormlyFieldBelongsTo } from './belongs-to.config';
 import { ButtonModule } from 'primeng/button';
 import { ButtonGroup } from 'primeng/buttongroup';
 import { PopoverModule } from 'primeng/popover';
+import { SelectModule } from 'primeng/select';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 @NgModule({
   declarations: [
@@ -25,7 +27,9 @@ import { PopoverModule } from 'primeng/popover';
     InputTextModule,
     InputGroupModule,
     InputGroupAddonModule,
-    PopoverModule
+    PopoverModule,
+    SelectModule,
+    FloatLabelModule
   ],
 })
 export class FormlyInputModule {}

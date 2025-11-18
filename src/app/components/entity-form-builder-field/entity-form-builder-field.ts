@@ -24,6 +24,8 @@ import { DragDropModule } from 'primeng/dragdrop';
 import { FormlyFieldConfig } from '@ngx-formly/core';
 import { CardModule } from 'primeng/card';
 import { AccordionModule } from 'primeng/accordion';
+import { TabsModule } from 'primeng/tabs';
+import { FieldsetModule } from 'primeng/fieldset';
 
 
 export const FieldType = {
@@ -62,7 +64,9 @@ export const FieldType = {
     AutoCompleteModule,
     DragDropModule,
     CardModule,
-    AccordionModule
+    AccordionModule,
+    TabsModule,
+    FieldsetModule
   ],
   templateUrl: './entity-form-builder-field.html',
   styleUrl: './entity-form-builder-field.css',
@@ -116,6 +120,17 @@ export class EntityFormBuilderField implements OnInit {
     { label: 'Clear Fields', value: 'CLEAR_FIELDS' },
   ];
 
+  ruleTypes: Record<string, string>[] = [
+    { label: 'Hidden', value: 'hidden' },
+    { label: 'Disabled', value: 'disabled' },
+  ];
+
+  ruleConditions: Record<string, string>[] = [
+    { label: 'Is Present', value: 'IS NOT NULL' },
+    { label: 'Is not Present', value: 'IS NULL' },
+    { label: 'IS', value: '=' },
+  ];
+
   builderFieldTypes: Record<string, string>[] = [
     { label: 'Layout Element', value: 'layout' },
     { label: 'Input Element', value: 'input' },
@@ -124,13 +139,10 @@ export class EntityFormBuilderField implements OnInit {
   layoutFieldTypes: Record<string, string>[] = [
     { label: 'Panel', value: 'panel' },
     { label: 'Accordion', value: 'accordion' },
-    { label: 'Accordion Tab', value: 'accordion-tab' },
     { label: 'Card', value: 'card' },
     { label: 'Panel', value: 'panel' },
     { label: 'Stepper', value: 'stepper' },
-    { label: 'Step', value: 'step' },
     { label: 'Tabs', value: 'tabs' },
-    { label: 'Tab', value: 'tab' },
   ];
 
   constructor(
@@ -140,8 +152,6 @@ export class EntityFormBuilderField implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('EntityFormBuilder Host ID:', this.hostId);
-    
     if (this.hostId) {
       try {
         this.fieldList = this.mockDataSvc.tableInfo[this.hostId].columns;
@@ -149,12 +159,9 @@ export class EntityFormBuilderField implements OnInit {
       } catch (error) {
         this._formSpec = { fields: []  };
       }
-      console.log(`Table Column Info for Host ID ${this.hostId}:`, this.mockDataSvc.tableInfo[this.hostId]);
     }
 
     this.field.fieldGroup = this.field.fieldGroup || [];
-
-    console.log('EntityFormBuilder Fields:', this.fieldList);
   }
 
   openContextMenu(event: MouseEvent, _field: any, _index: number): void {
@@ -186,9 +193,14 @@ export class EntityFormBuilderField implements OnInit {
     this.formSpecChange.next();
   }
 
-  onEditField() {
-    console.log('Edit Field Clicked!', this.field);
+  onAddRule() {
+    if (!this.field.__builderRules) {
+      this.field.__builderRules = [];
+    }
+    this.field.__builderRules.push({ type: 'hidden' });
+  }
 
+  onEditField() {
     if (this.field && this.field.type === 'belongs-to') {
       if (!this.field.props) {
         this.field.props = {};
@@ -197,15 +209,10 @@ export class EntityFormBuilderField implements OnInit {
       this.field.props['fromField'] = this.field.key;
     }
 
-    // this.editFieldPopover.show(event);
-    // this.editFieldDrawer.show();
     this._showDrawer = true;
   }
 
   onRemoveField() {
-    console.log('Remove Field Clicked!', this.field);
-    // this.fieldGroup = this.fieldGroup.filter((f: any) => f.id !== this.field);
-
     const fieldIndex = this.fieldGroup.findIndex((f: any) => f === this.field);
     if (fieldIndex !== -1) {
       this.fieldGroup.splice(fieldIndex, 1);
@@ -214,16 +221,19 @@ export class EntityFormBuilderField implements OnInit {
     this.formSpecChange.next();
   }
 
+  onRemoveRule(index: number) {
+    if (this.field.__builderRules && index >= 0 && index < this.field.__builderRules.length) {
+      this.field.__builderRules.splice(index, 1);
+    }
+  }
+
   onChangeFieldKey(index: number, event: any) {
-    console.log('Field Key Changed:', index, event);
     // this._resetField();
     this._setFieldTypesForField();
     // this._disableUsedFieldSpecs();
   }
 
   onChangeFieldType(index: number, event: any) {
-    console.log('Field Type Changed:', index, event);
-
     const _field = this._formSpec.fields[index];
 
     if (_field.type == FieldType.BELONGS_TO.code) {
@@ -235,11 +245,11 @@ export class EntityFormBuilderField implements OnInit {
       _field.props['toEntity'] = '';
       _field.props['fromField'] = _field.key;
       _field.props['toField'] = '';
+      _field.props['displayField'] = '';
     }
   } 
 
   async onSave() {
-    console.log('Form Spec to Save:', this._formSpec);
     for (const _spec of this._formSpec.fields) {
       if (!_spec.props!.label || _spec.props!.label.trim() === '') {
         _spec.props!.label = _spec.key as string;
@@ -319,13 +329,11 @@ export class EntityFormBuilderField implements OnInit {
   }
 
   private _addFieldBefore(index: number) {
-    console.log('Add Field Before:', index);
     const _newField = this._getNewField();
     this._formSpec.fields.splice(index, 0, _newField);
   }
 
   private _addFieldAfter(index: number) {
-    console.log('Add Field After:', index);
     const _newField = this._getNewField();
     this._formSpec.fields.splice(index + 1, 0, _newField);
   }
@@ -342,7 +350,6 @@ export class EntityFormBuilderField implements OnInit {
 
     try {
       const _columnInfo = this.fieldList.find(f => f.name === this.field.key);
-      console.log('Column Info for field:', _columnInfo);
       
       if (!_columnInfo) throw new Error('Column info not found');
 
