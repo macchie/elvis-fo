@@ -26,6 +26,7 @@ import { CardModule } from 'primeng/card';
 import { AccordionModule } from 'primeng/accordion';
 import { TabsModule } from 'primeng/tabs';
 import { FieldsetModule } from 'primeng/fieldset';
+import { EntityFormService } from '../../services/entity-form-service';
 
 
 export const FieldType = {
@@ -82,7 +83,11 @@ export class EntityFormBuilderField implements OnInit {
   @Output() formSpecChange: Subject<void> = new Subject<void>();
   @Output() formSpecSaved: Subject<void> = new Subject<void>();
 
-  public _formSpec!: any;
+  @Input() showDropzones: boolean = false;
+  _isDragging: boolean = false;
+  @Output() isDragging: Subject<boolean> = new Subject<boolean>();
+
+  // public _formSpec!: any;
   public _currentFieldIdx: number = -1;
   public _showDrawer: boolean = false;
 
@@ -92,16 +97,8 @@ export class EntityFormBuilderField implements OnInit {
 
   fieldContextMenuItems: any[] = [];
 
-  sizeOptions: any[] = [
-    { label: '1/4', value: 'col-span-3' },
-    { label: '1/3', value: 'col-span-4' },
-    { label: '1/2', value: 'col-span-6' },
-    { label: '2/3', value: 'col-span-8' },
-    { label: 'Full Width', value: 'col-span-12' },
-  ];
-
   fieldList: TableColumnInfo[] = [];
-  // fieldTypes: { code: string, name: string }[] = [];
+
   fieldTypes: { code: string, name: string }[] = [
     FieldType.INPUT,
     FieldType.PASSWORD,
@@ -120,78 +117,47 @@ export class EntityFormBuilderField implements OnInit {
     { label: 'Clear Fields', value: 'CLEAR_FIELDS' },
   ];
 
-  ruleTypes: Record<string, string>[] = [
-    { label: 'Hidden', value: 'hidden' },
-    { label: 'Disabled', value: 'disabled' },
-  ];
-
-  ruleConditions: Record<string, string>[] = [
-    { label: 'Is Present', value: 'IS NOT NULL' },
-    { label: 'Is not Present', value: 'IS NULL' },
-    { label: 'IS', value: '=' },
-  ];
-
-  builderFieldTypes: Record<string, string>[] = [
-    { label: 'Layout Element', value: 'layout' },
-    { label: 'Input Element', value: 'input' },
-  ];
-  
-  layoutFieldTypes: Record<string, string>[] = [
-    { label: 'Panel', value: 'panel' },
-    { label: 'Accordion', value: 'accordion' },
-    { label: 'Card', value: 'card' },
-    { label: 'Panel', value: 'panel' },
-    { label: 'Stepper', value: 'stepper' },
-    { label: 'Tabs', value: 'tabs' },
-  ];
-
   constructor(
-    public mockDataSvc: MockData
+    public mockDataSvc: MockData,
+    public entityFormSvc: EntityFormService
   ) {
     
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     if (this.hostId) {
       try {
         this.fieldList = this.mockDataSvc.tableInfo[this.hostId].columns;
-        this._formSpec = JSON.parse(JSON.stringify(this.mockDataSvc.formSpecs[this.hostId] || { fields: [] }));
+        // this._formSpec = await this.entityFormSvc.getFormSpec(this.hostId);
       } catch (error) {
-        this._formSpec = { fields: []  };
+        // this._formSpec = { fields: []  };
       }
     }
 
     this.field.fieldGroup = this.field.fieldGroup || [];
   }
 
-  openContextMenu(event: MouseEvent, _field: any, _index: number): void {
-    this.fieldContextMenuItems = [
-      { 
-        label: 'Add Field Before', 
-        icon: 'pi pi-angle-double-left',
-        command: (event: any) => {
-          this._addFieldBefore(_index);
-        }
-      },
-      { 
-        label: 'Add Field After', 
-        icon: 'pi pi-angle-double-right' ,
-        command: (event: any) => {
-          this._addFieldAfter(_index);
-        }
-      }
-    ];
+  // openContextMenu(event: MouseEvent, _field: any, _index: number): void {
+  //   this.fieldContextMenuItems = [
+  //     { 
+  //       label: 'Add Field Before', 
+  //       icon: 'pi pi-angle-double-left',
+  //       command: (event: any) => {
+  //         this._addFieldBefore(_index);
+  //       }
+  //     },
+  //     { 
+  //       label: 'Add Field After', 
+  //       icon: 'pi pi-angle-double-right' ,
+  //       command: (event: any) => {
+  //         this._addFieldAfter(_index);
+  //       }
+  //     }
+  //   ];
 
-    this.contextMenu.show(event);
-    event.stopPropagation();
-  }
-
-  onAddField() {
-    console.log('Add Field Clicked!');
-    const _newField = this._getNewField();
-    this.field.fieldGroup.push(_newField);
-    this.formSpecChange.next();
-  }
+  //   this.contextMenu.show(event);
+  //   event.stopPropagation();
+  // }
 
   onAddRule() {
     if (!this.field.__builderRules) {
@@ -234,117 +200,79 @@ export class EntityFormBuilderField implements OnInit {
   }
 
   onChangeFieldType(index: number, event: any) {
-    const _field = this._formSpec.fields[index];
+    // const _field = this._formSpec.fields[index];
 
-    if (_field.type == FieldType.BELONGS_TO.code) {
-      // Set default props for belongs-to
-      if (!_field.props) {
-        _field.props = {};
-      }
-      _field.props['fromEntity'] = this.hostId;
-      _field.props['toEntity'] = '';
-      _field.props['fromField'] = _field.key;
-      _field.props['toField'] = '';
-      _field.props['displayField'] = '';
-    }
+    // if (_field.type == FieldType.BELONGS_TO.code) {
+    //   // Set default props for belongs-to
+    //   if (!_field.props) {
+    //     _field.props = {};
+    //   }
+    //   _field.props['fromEntity'] = this.hostId;
+    //   _field.props['toEntity'] = '';
+    //   _field.props['fromField'] = _field.key;
+    //   _field.props['toField'] = '';
+    //   _field.props['displayField'] = '';
+    // }
+
+    // this.formSpecChange.next();
   } 
-
-  async onSave() {
-    for (const _spec of this._formSpec.fields) {
-      if (!_spec.props!.label || _spec.props!.label.trim() === '') {
-        _spec.props!.label = _spec.key as string;
-      }
-      delete _spec['id'];
-    }
-    this.mockDataSvc.onSaveFormSpec(this.hostId!, this._formSpec);
-    this.mockDataSvc.formSpecs[this.hostId!] = this._formSpec;
-    this.formSpecSaved.next();
-  }
-
-  getProductLabel(product: any): string {
-    if (typeof product === 'string') {
-        return product;
-    }
-
-    return product?.name || '';
-  }
-
-  getProductValue(product: any): any {
-    console.log('getProductValue called with:', product);
-
-    if (typeof product === 'string') {
-      return { name: product, custom: true };
-    }
-  }
-
-  isDragging: boolean = false;
-  _draggingFieldIndex: number = -1;
 
   onDragStart(event: DragEvent, _field: FormlyFieldConfig, _index: number) {
     console.log('Drag Start for field:', _index, event, _field);
-    this._draggingFieldIndex = _index;
-    this.isDragging = true;
+    // this._draggingFieldIndex = _index;
+    this._isDragging = true;
+    this.isDragging.next(true);
   }
 
   onDragEnd(event: DragEvent) {
     console.log('Drag End for field:', event);
-    this._draggingFieldIndex = -1;
-    this.isDragging = false;
+    // this._draggingFieldIndex = -1;
+    this._isDragging = false;
+    this.isDragging.next(false);
   }
 
-  onDrop(event: DragEvent, _index: number, _endSide: boolean = false) {
-    console.log('Drop event:', _index, event);
-    if (this._draggingFieldIndex === -1 || this._draggingFieldIndex === _index) {
-      this.isDragging = false;
-      return;
-    }
+  onDrop(event: DragEvent, _field: ElvisFormlyFieldConfig) {
+    console.log('Drop event:', _field);
+    // if (this._draggingFieldIndex === -1 || this._draggingFieldIndex === _index) {
+    //   this.isDragging = false;
+    //   return;
+    // }
 
-    const draggedField = this._formSpec.fields[this._draggingFieldIndex];
-    // Remove dragged field from its original position
-    this._formSpec.fields.splice(this._draggingFieldIndex, 1);
-    // Insert dragged field at the new position
+    // const draggedField = this._formSpec.fields[this._draggingFieldIndex];
+    // // Remove dragged field from its original position
+    // this._formSpec.fields.splice(this._draggingFieldIndex, 1);
+    // // Insert dragged field at the new position
 
-    if (_endSide) {
-      _index = _index - 1;
-    }
+    // if (_endSide) {
+    //   _index = _index - 1;
+    // }
 
-    this._formSpec.fields.splice(_index, 0, draggedField);
+    // this._formSpec.fields.splice(_index, 0, draggedField);
 
-    this._draggingFieldIndex = -1;
+    // this._draggingFieldIndex = -1;
 
-    this.isDragging = false;
+    this.isDragging.next(false);
   }
 
   // private
 
-  private _getNewField(): ElvisFormlyFieldConfig {
-    return {
-      __builderType: 'layout',
-      key: 'panel',
-      type: 'panel',
-      props: { },
-      fieldGroup: [],
-      className: this.sizeOptions[this.sizeOptions.length - 1].value, // default to Full
-    }
-  }
+  // private _addFieldBefore(index: number) {
+  //   const _newField = this.entityFormSvc.getNewField();
+  //   this._formSpec.fields.splice(index, 0, _newField);
+  // }
 
-  private _addFieldBefore(index: number) {
-    const _newField = this._getNewField();
-    this._formSpec.fields.splice(index, 0, _newField);
-  }
+  // private _addFieldAfter(index: number) {
+  //   const _newField = this.entityFormSvc.getNewField();
+  //   this._formSpec.fields.splice(index + 1, 0, _newField);
+  // }
 
-  private _addFieldAfter(index: number) {
-    const _newField = this._getNewField();
-    this._formSpec.fields.splice(index + 1, 0, _newField);
-  }
-
-  private _disableUsedFieldSpecs() {
-    const usedFieldKeys = this._formSpec.fields.map((f: any) => f.key);
-    this.fieldList = this.fieldList.map(f => ({
-      ...f,
-      disabled: usedFieldKeys.includes(f.name),
-    }));
-  }
+  // private _disableUsedFieldSpecs() {
+  //   const usedFieldKeys = this._formSpec.fields.map((f: any) => f.key);
+  //   this.fieldList = this.fieldList.map(f => ({
+  //     ...f,
+  //     disabled: usedFieldKeys.includes(f.name),
+  //   }));
+  // }
 
   private _setFieldTypesForField() {
 
@@ -409,12 +337,5 @@ export class EntityFormBuilderField implements OnInit {
     } catch (error) {
       console.log('Error setting field types for field:', error);
     }
-  }
-
-  private _resetField() {
-    this.field.__builderType = 'layout';
-    this.field.type = 'panel';
-    this.field.fieldGroup = [];
-    this.field.props = {};
   }
 }

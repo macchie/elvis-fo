@@ -1,8 +1,16 @@
 
 <p-contextmenu #contextMenu [model]="fieldContextMenuItems" />
 
-<div id="field-spec" class="p-2 bg-primary-100 rounded-xl" >
+<div 
+  id="field-spec" class="p-2 bg-primary-100 rounded-xl" [class.drag-source]="_isDragging"
+  pDraggable 
+  (onDragStart)="onDragStart($event, field, 0)" 
+  (onDragEnd)="onDragEnd($event)" 
+>
   <!-- (contextmenu)="openContextMenu($event, field)" -->
+
+  <div class="dropzone" pDroppable [hidden]="!showDropzones || _isDragging" (onDrop)="onDrop($event, field)"></div>
+  <!-- <div class="dropzone-after" [hidden]="!isDragging"></div> -->
 
   <div id="toolbar" class="flex flex-row items-center justify-between px-1" [class.mb-2]="true">
     <div class="flex flex-row items-center justify-between gap-4">
@@ -34,7 +42,7 @@
         }
       }
 
-      <p-select size="small" optionLabel="label" optionValue="value" [options]="sizeOptions" [(ngModel)]="field.className" />
+      <p-select size="small" optionLabel="label" optionValue="value" [options]="entityFormSvc.sizeOptions" [(ngModel)]="field.className" />
     </div>
 
     <div>
@@ -44,20 +52,28 @@
   </div>
 
   <div class="flex flex-col gap-2">
+    <small>ID: {{field.id}}</small>
+
     @if (field.__builderType === 'layout') {
       @if (field.__builderWrapper == 'panel') {
         @for (_groupField of field.fieldGroup; track $index) {
           <app-entity-form-builder-field [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup" class="{{field.className}}"></app-entity-form-builder-field>
         }
-        <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-          <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
-        </div>
+        @if (hostId && !showDropzones) {
+          <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId, field.fieldGroup)"></p-button>
+          </div>
+        }
       }
 
       @if (field.__builderWrapper == 'accordion') {
-        <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-          <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
-        </div>
+        @if(!showDropzones) {
+          <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId!, field.fieldGroup)"></p-button>
+          </div>
+        }
+
+        <div class="dropzone-row col-span-12" pDroppable [hidden]="!showDropzones || _isDragging" (onDrop)="onDrop($event, field)"></div>
 
         <div class=" bg-primary-100 rounded-lg">
           <p-accordion>
@@ -89,21 +105,15 @@
               }
             </p-tabpanels>
           </p-tabs>
-
-          <!-- @for (_groupField of field.fieldGroup; track $index) {
-            <p-accordion-panel [value]="$index">
-              <p-accordion-header>{{ _groupField.key }}</p-accordion-header>
-              <p-accordion-content>
-                <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField"
-                  [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
-              </p-accordion-content>
-            </p-accordion-panel>
-          } -->
         </div>
 
-        <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-          <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
-        </div>
+        <div class="dropzone-row col-span-12" pDroppable [hidden]="!showDropzones || _isDragging" (onDrop)="onDrop($event, field)"></div>
+
+        @if(!showDropzones) {
+          <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId!, field.fieldGroup)"></p-button>
+          </div>
+        }
       }
 
       @if (field.__builderWrapper == 'card') {
@@ -112,16 +122,21 @@
             @for (_groupField of field.fieldGroup; track $index) {
               <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
             }
-            <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg col-span-12">
-              <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
-            </div>
+
+            <div class="dropzone-row col-span-12" pDroppable [hidden]="!showDropzones || _isDragging" (onDrop)="onDrop($event, field)"></div>
+
+            @if(!showDropzones) {
+              <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg col-span-12">
+                <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId!, field.fieldGroup)"></p-button>
+              </div>
+            }
           </div>
         </p-card>
       }
     }
     
     @if (field.__builderType === 'input') {
-      <label for="{{field.key}}">
+      <label [for]="field.key">
         {{field.props!.label || field.key}}
         @if (field.props!.required) {
           <span class="text-red-600">*</span>
@@ -176,29 +191,40 @@
       <div class="flex flex-col gap-6 mt-2">
         <div class="flex flex-row items-center justify-between gap-4">
           <p-floatlabel class="flex-2" variant="on">
-            <p-select fluid [options]="builderFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.__builderType" />
+            <p-select fluid [options]="entityFormSvc.builderFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.__builderType" />
             <label for="key">Type</label>
           </p-floatlabel>
   
           @if (field.__builderType === 'layout') {
             <p-floatlabel class="flex-3" variant="on">
-              <p-select fluid [options]="layoutFieldTypes" optionLabel="label" optionValue="value" [(ngModel)]="field.__builderWrapper" />
-              <label for="key">Layout Type</label>
+              <p-select 
+                fluid 
+                optionLabel="label" 
+                optionValue="value" 
+                [options]="entityFormSvc.layoutFieldTypes" 
+                [(ngModel)]="field.__builderWrapper"
+              />
+              <label for="layoutType">Layout Type</label>
             </p-floatlabel>
           }
   
           @if (field.__builderType === 'input') {
             <p-floatlabel class="flex-3"  variant="on">
               <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name" optionValue="code" placeholder="Select Field Type" [(ngModel)]="field.type" (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)" />
-              <label for="key">Input Type</label>
+              <label for="inputType">Input Type</label>
             </p-floatlabel>
           }
         </div>
   
         @if (field.__builderType === 'layout') {
           <p-floatlabel variant="on">
-            <input pInputText fluid type="text" placeholder="Field Label" [(ngModel)]="field.props!.label" />
-            <label for="key">Label</label>
+            <input pInputText fluid type="text" [(ngModel)]="field.key" (ngModelChange)="entityFormSvc.refreshIDs(hostId!)" />
+            <label for="label">Key</label>
+          </p-floatlabel>
+
+          <p-floatlabel variant="on">
+            <input pInputText fluid type="text" [(ngModel)]="field.props!.label" />
+            <label for="label">Label</label>
           </p-floatlabel>
         }
       </div>
@@ -216,6 +242,11 @@
             <label for="disabled" class="m-0 p-0 mr-2">Disabled</label>
             <p-toggleswitch id="disabled" [(ngModel)]="field.props!.disabled" (ngModelChange)="field.props!.readonly = false" />
           </div>
+
+          <p-floatlabel variant="on">
+            <input pInputText fluid type="text" [(ngModel)]="field.key" />
+            <label for="label">Key</label>
+          </p-floatlabel>
           
           <p-floatlabel variant="on">
             <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="field.key"
@@ -321,7 +352,7 @@
         @for (rule of field.__builderRules; track $index) {
           <div class="flex flex-row items-center justify-between gap-4">
             <p-floatlabel variant="on" class="flex-2">
-              <p-select fluid [options]="ruleTypes" optionLabel="label" optionValue="value" [(ngModel)]="rule.type" />
+              <p-select fluid [options]="entityFormSvc.ruleTypes" optionLabel="label" optionValue="value" [(ngModel)]="rule.type" />
               <label for="ruleType">Rule</label>
             </p-floatlabel>
           
@@ -331,7 +362,7 @@
             </p-floatlabel>
 
             <p-floatlabel variant="on" class="flex-2">
-              <p-select fluid [options]="ruleConditions" optionLabel="label" optionValue="value" [(ngModel)]="rule.condition" />
+              <p-select fluid [options]="entityFormSvc.ruleConditions" optionLabel="label" optionValue="value" [(ngModel)]="rule.condition" />
               <label for="ruleCondition">Condition</label>
             </p-floatlabel>
 

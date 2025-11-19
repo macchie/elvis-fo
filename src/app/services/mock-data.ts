@@ -65,7 +65,6 @@ export class MockData {
   SERVER_HOST = 'beta.elvispos.com';
 
   tableInfo: { [key: string]: TableInfo; } = {};
-  formSpecs: { [key: string]: FormSpec; } = {};
   tableSpecs: { [key: string]: TableSpec; } = {};
 
   imageBuckets: any = {
@@ -89,7 +88,6 @@ export class MockData {
     for (const _table of this.TABLES) {
       const [_schema, _tableName] = _table.split('.');
       _requests.push(this.getTableDefinition(_schema, _tableName));
-      this.formSpecs[_table] = { fields: [] };
     }
 
     const _tableDefinitions = await Promise.all(_requests);
@@ -97,11 +95,6 @@ export class MockData {
     for (const _tableDef of _tableDefinitions) {
       const key = `${_tableDef.table_schema}.${_tableDef.table_name}`;
       this.tableInfo[key] = _tableDef;
-    }
-
-    const _formSpecs = await this.getFormSpecs();
-    for (const _spec of _formSpecs) {
-      this.formSpecs[_spec.host_id] = _spec.data;
     }
 
     const _tableSpecs = await this.getTableSpecs();
@@ -371,16 +364,16 @@ export class MockData {
     }
   }
 
-  async getFormSpec(schemaName: string, tableName: string): Promise<FormlyFieldConfig[]> {
+  async getFormSpec(_hostId: string): Promise<{ id: string, host_id: string, data: FormSpec }[]> {
     const query = `
       SELECT * FROM frontoffice.entity_form_specs
-      WHERE host_id = '${schemaName}.${tableName}'
+      WHERE host_id = $$${_hostId}$$
     `;
 
     try {
       const _resp = await this.execute(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query);
-      console.log(`Form Spec for ${schemaName}.${tableName}`, _resp[0].data);
-      return _resp[0].data as FormlyFieldConfig[];
+      console.log(`Form Spec for _hostId`, _resp[0].data);
+      return _resp[0].data as { id: string, host_id: string, data: FormSpec }[];
     } catch (error) {
       console.warn('Error fetching Form Spec:', error);
       return [];

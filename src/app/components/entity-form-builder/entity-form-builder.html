@@ -1,22 +1,21 @@
 
-<p-contextmenu #contextMenu [model]="fieldContextMenuItems" />
-
 <div id="builder-content" #builderContent class="grid grid-cols-12">
-  @for (_field of _formSpec.fields; track $index;) {
+  @for (_field of entityFormSvc.formSpec[hostId!].fields; track $index;) {
     <app-entity-form-builder-field 
       class="{{_field.className}}" 
-      pDraggable 
-      (onDragStart)="onDragStart($event, _field, $index)" 
-      (onDragEnd)="onDragEnd($event)" 
       [field]="_field"
-      [fieldGroup]="_formSpec.fields"
+      [fieldGroup]="entityFormSvc.formSpec[hostId!].fields"
       [hostId]="hostId"
+      [showDropzones]="showDropzones"
+      (isDragging)="showDropzones = $event"
     ></app-entity-form-builder-field>
   } 
 
-  <div class="flex flex-row justify-center col-span-12">
-    <div class="flex flex-row flex-1 items-center py-2 justify-center border-2 border-dashed border-surface-300 rounded-lg">
-      <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
+  @if (hostId) {
+    <div class="flex flex-row justify-center col-span-12">
+      <div class="flex flex-row flex-1 items-center py-2 justify-center border-2 border-dashed border-surface-300 rounded-lg">
+        <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId, entityFormSvc.formSpec[hostId!].fields)"></p-button>
+      </div>
     </div>
-  </div>
+  }
 </div>

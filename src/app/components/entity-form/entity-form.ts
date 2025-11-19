@@ -9,6 +9,7 @@ import { FormSpec } from '../../interfaces/form-spec.interface';
 import { ToolbarModule } from 'primeng/toolbar';
 import { TagModule } from 'primeng/tag';
 import { SplitButtonModule } from 'primeng/splitbutton';
+import { EntityFormService } from '../../services/entity-form-service';
 
 @Component({
   selector: 'app-entity-form',
@@ -59,6 +60,7 @@ export class EntityForm implements OnInit {
 
   constructor(
     private mockDataSvc: MockData,
+    private entityFormSvc: EntityFormService,
     private cd: ChangeDetectorRef,
   ) {
 
@@ -75,7 +77,7 @@ export class EntityForm implements OnInit {
         this.tableName = _parts[1];
       }
 
-      this.formSpec = this.mockDataSvc.formSpecs[this.hostId];
+      this.formSpec = await this.entityFormSvc.getFormSpec(this.hostId);
 
       if (this.entityId !== undefined) {
         this.model = await this.mockDataSvc.getEntity(this.hostId, this.entityId);
@@ -124,7 +126,7 @@ export class EntityForm implements OnInit {
     } else {
       this.form.enable();
     }
-    this.formSpec = this.mockDataSvc.formSpecs[this.hostId];
+    // this.formSpec = this.entityFormSvc.getE
     this.cd.detectChanges();
   }
 
