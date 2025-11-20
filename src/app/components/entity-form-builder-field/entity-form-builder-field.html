@@ -47,7 +47,7 @@
 
     <div>
       <p-button class="mr-2" icon="pi pi-pen-to-square" severity="secondary" size="small" [outlined]="true" [rounded]="true" (click)="onEditField()" />
-      <p-button icon="pi pi-trash" severity="danger" size="small" [outlined]="true" [rounded]="true" (click)="onRemoveField()" />
+      <p-button icon="pi pi-trash" severity="danger" size="small" [outlined]="true" [rounded]="true" (click)="entityFormSvc.onRemoveField(hostId!, fieldGroup, field)" />
     </div>
   </div>
 
@@ -61,7 +61,7 @@
         }
         @if (hostId && !showDropzones) {
           <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId, field.fieldGroup)"></p-button>
+            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
           </div>
         }
       }
@@ -69,7 +69,7 @@
       @if (field.__builderWrapper == 'accordion') {
         @if(!showDropzones) {
           <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId!, field.fieldGroup)"></p-button>
+            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
           </div>
         }
 
@@ -111,7 +111,7 @@
 
         @if(!showDropzones) {
           <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId!, field.fieldGroup)"></p-button>
+            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
           </div>
         }
       }
@@ -127,7 +127,7 @@
 
             @if(!showDropzones) {
               <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg col-span-12">
-                <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId!, field.fieldGroup)"></p-button>
+                <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
               </div>
             }
           </div>
@@ -203,6 +203,7 @@
                 optionValue="value" 
                 [options]="entityFormSvc.layoutFieldTypes" 
                 [(ngModel)]="field.__builderWrapper"
+                (ngModelChange)="entityFormSvc.refreshIDs(hostId!)"
               />
               <label for="layoutType">Layout Type</label>
             </p-floatlabel>
@@ -210,18 +211,13 @@
   
           @if (field.__builderType === 'input') {
             <p-floatlabel class="flex-3"  variant="on">
-              <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name" optionValue="code" placeholder="Select Field Type" [(ngModel)]="field.type" (ngModelChange)="onChangeFieldType(_currentFieldIdx, $event)" />
+              <p-select fluid [options]="fieldTypes" [disabled]="!fieldTypes || fieldTypes.length == 0" optionLabel="name" optionValue="code" placeholder="Select Field Type" [(ngModel)]="field.type" (ngModelChange)="entityFormSvc.refreshIDs(hostId!)" />
               <label for="inputType">Input Type</label>
             </p-floatlabel>
           }
         </div>
   
         @if (field.__builderType === 'layout') {
-          <p-floatlabel variant="on">
-            <input pInputText fluid type="text" [(ngModel)]="field.key" (ngModelChange)="entityFormSvc.refreshIDs(hostId!)" />
-            <label for="label">Key</label>
-          </p-floatlabel>
-
           <p-floatlabel variant="on">
             <input pInputText fluid type="text" [(ngModel)]="field.props!.label" />
             <label for="label">Label</label>
@@ -244,13 +240,7 @@
           </div>
 
           <p-floatlabel variant="on">
-            <input pInputText fluid type="text" [(ngModel)]="field.key" />
-            <label for="label">Key</label>
-          </p-floatlabel>
-          
-          <p-floatlabel variant="on">
-            <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="field.key"
-              (ngModelChange)="onChangeFieldKey(_currentFieldIdx, $event)" />
+            <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name" [(ngModel)]="field.key" (ngModelChange)="entityFormSvc.refreshIDs(hostId!)" />
             <label for="key">Column Name</label>
           </p-floatlabel>
       

@@ -37,9 +37,6 @@ export class EntityForm implements OnInit {
   @Input() readonly!: boolean;
   @Input() hideHeader!: boolean;
   @Input() hideFooter!: boolean;
-  schemaName!: string;
-  tableName!: string;
-  formSpec!: FormSpec;
 
   @ViewChild('formlyForm', { static: false }) 
   formlyForm!: FormlyForm;
@@ -59,8 +56,8 @@ export class EntityForm implements OnInit {
   _formActions: any[] = [];
 
   constructor(
+    public entityFormSvc: EntityFormService,
     private mockDataSvc: MockData,
-    private entityFormSvc: EntityFormService,
     private cd: ChangeDetectorRef,
   ) {
 
@@ -70,15 +67,6 @@ export class EntityForm implements OnInit {
     this.form = new FormGroup({});
 
     if (this.hostId) {
-      const _parts = this.hostId.split('.');
-
-      if (_parts.length === 2) {
-        this.schemaName = _parts[0];
-        this.tableName = _parts[1];
-      }
-
-      this.formSpec = await this.entityFormSvc.getFormSpec(this.hostId);
-
       if (this.entityId !== undefined) {
         this.model = await this.mockDataSvc.getEntity(this.hostId, this.entityId);
       }
@@ -90,6 +78,7 @@ export class EntityForm implements OnInit {
       }
 
       this.setMeta();
+      this.entityFormSvc.refreshIDs(this.hostId); 
       this.cd.detectChanges();
     }
   }
@@ -126,20 +115,21 @@ export class EntityForm implements OnInit {
     } else {
       this.form.enable();
     }
-    // this.formSpec = this.entityFormSvc.getE
     this.cd.detectChanges();
   }
 
   onEditForm() {
-    console.log('Form Spec:', this.formSpec);
     this.editMode = !this.editMode;
-    if (!this.editMode) {
+    if (this.editMode) {
+      this.entityFormSvc.refreshIDs(this.hostId);
+      this.cd.detectChanges();
+    } else {
       this.refreshFormSpec();
     }
   }
 
   async onSaveSpec() {
-    await this.entityFormBuilder.onSave();
+    await this.entityFormSvc.onSaveSpec(this.hostId);
     this.editMode = false;
     this.editMode = false;
   }

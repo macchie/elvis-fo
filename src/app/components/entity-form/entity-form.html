@@ -28,11 +28,11 @@
     @if (editMode && !readonly) {
       <app-entity-form-builder #entityFormBuilder [hostId]="hostId" (formSpecSaved)="onEditForm()"></app-entity-form-builder>
     } @else {
-      @if (form && formSpec) {
+      @if (form && entityFormSvc.formSpec[hostId!]) {
         <form [formGroup]="form">
           <formly-form #formlyForm 
             [form]="form"
-            [fields]="formSpec?.fields || []"
+            [fields]="entityFormSvc.formSpec[hostId!].fields || []"
             [model]="model"
           ></formly-form>
         </form>

@@ -56,7 +56,9 @@ export class EntityFormService {
 
     for (const _spec of _formSpecs) {
       this.formSpec[_spec.host_id] = _spec.data;
+      await this.refreshIDs(_spec.host_id);
     }
+
   }
 
   getNewField(): ElvisFormlyFieldConfig {
@@ -77,14 +79,28 @@ export class EntityFormService {
   }
 
   onAddField(_key: string, _fields: ElvisFormlyFieldConfig[]) {
-    console.log(`onAddField(${_key})`);
     _fields.push(this.getNewField());
     this.refreshIDs(_key);
   }
 
-  async onSaveSpec(_key: string, _formSpec: FormSpec) {
-    this._prepareForSave(_formSpec.fields);
-    console.log('Saving Form Spec for Entity:', _key, _formSpec);
+  onRemoveField(_key: string, _fields: ElvisFormlyFieldConfig[], _field: ElvisFormlyFieldConfig) {
+    if (!_fields || !_field) {
+      return;
+    }
+
+    const fieldIndex = _fields.findIndex((f: any) => f.id === _field.id);
+    
+    if (fieldIndex !== -1) {
+      _fields.splice(fieldIndex, 1);
+    }
+
+    this.refreshIDs(_key);
+  }
+
+  async onSaveSpec(_key: string) {
+    this.refreshIDs(_key);
+    const _formSpec = this.formSpec[_key];
+    this._prepareForSave(_key, _formSpec.fields);
     this.mockDataSvc.onSaveFormSpec(_key, _formSpec);
     this.formSpec[_key] = _formSpec;
   }
@@ -107,63 +123,64 @@ export class EntityFormService {
 
   // private
 
-  private _generateIDs(_key: string) {
-    for (const _field of this.formSpec[_key].fields) {
-      _field.id = this._generateID(_key, _field);
+  private _generateIDs(_key: string, _fields?: ElvisFormlyFieldConfig[], _prefix?: string) {
+    if (!_fields && !_prefix) {
+      _fields = this.formSpec[_key].fields;
+    }
+
+    if (!_fields) {
+      return;
+    }
+
+    for (const _field of _fields) {
+      let _newId = ``;
+
+      if (_field.__builderType === 'layout') {
+        _newId = _field.__builderWrapper!;
+      }
+
+      if (_field.__builderType === 'input') {
+        _newId = _field.key ? _field.key!.toString() : (_field.type ? _field.type!.toString() : 'input');
+      }
+
+      if (_prefix && _prefix.trim() !== '') {
+        _newId = _prefix + '_' + _newId;
+      }
+
+      if (!this._CACHE[_key]) {
+        this._CACHE[_key] = new Set<string>();
+      }
+
+      if (this._CACHE[_key].has(_newId)) {
+        let _suffix = 1;
+        while (this._CACHE[_key].has(_newId + '_' + _suffix)) {
+          _suffix++;
+        }
+        _newId = _newId + '_' + _suffix;
+      }
+
+      this._CACHE[_key].add(_newId);
+
+      _field.id = _newId;
 
       if (_field.fieldGroup && _field.fieldGroup.length > 0) {
-        console.log('Generating IDs for layout field group:', _field.fieldGroup);
-
-        for (const _childField of _field.fieldGroup as ElvisFormlyFieldConfig[]) {
-          if (_childField.__builderType === 'layout') {
-            _childField.id = this._generateID(_key, _childField, _field.__builderWrapper);
-          }
-        }
+        this._generateIDs(_key, _field.fieldGroup, _field.id!);
       }
     }
   }
 
-  private _generateID(_key: string, _field: ElvisFormlyFieldConfig, _prefix: string = ''): string {
-    let _newId = _field.key!.toString();
-
-    if (_field.__builderType === 'layout' && _field.__builderWrapper) {
-      _newId = _field.__builderWrapper;
-    }
-
-    if (_field.__builderType === 'input') {
-      _newId = _newId ? _newId : 'input';
-    }
-
-    if (!this._CACHE[_key]) {
-      this._CACHE[_key] = new Set<string>();
-    }
-
-    if (this._CACHE[_key].has(_newId)) {
-      let _suffix = 1;
-      while (this._CACHE[_key].has(_newId + '_' + _suffix)) {
-        _suffix++;
-      }
-      _newId = _newId + '_' + _suffix;
-    }
-
-    this._CACHE[_key].add(_newId);
-
-    return _newId;
-  }
-
-  private _prepareForSave(_fields: ElvisFormlyFieldConfig[]) {
+  private _prepareForSave(_key: string, _fields: ElvisFormlyFieldConfig[]) {
     for (const _fieldSpec of _fields) {
-      delete _fieldSpec.id;
-
       if (_fieldSpec.__builderType === 'layout') {
-        delete _fieldSpec['type'];
         _fieldSpec.wrappers = [];
 
         if (_fieldSpec.__builderWrapper) {
-          _fieldSpec.wrappers.push(_fieldSpec.__builderWrapper);
+          _fieldSpec.wrappers = [_fieldSpec.__builderWrapper];
         }
-        
-        this._prepareForSave(_fieldSpec.fieldGroup as ElvisFormlyFieldConfig[]);
+      }
+
+      if (_fieldSpec.fieldGroup && _fieldSpec.fieldGroup.length > 0) {
+        this._prepareForSave(_key, _fieldSpec.fieldGroup as ElvisFormlyFieldConfig[]);
       }
 
       if (_fieldSpec.__builderType === 'input') {

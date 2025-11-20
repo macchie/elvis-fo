@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { MockData, TableColumnInfo } from '../../services/mock-data';
@@ -80,8 +80,6 @@ export class EntityFormBuilderField implements OnInit {
   @Input() fieldGroup: ElvisFormlyFieldConfig[] | any;
 
   @Input() hostId?: string;
-  @Output() formSpecChange: Subject<void> = new Subject<void>();
-  @Output() formSpecSaved: Subject<void> = new Subject<void>();
 
   @Input() showDropzones: boolean = false;
   _isDragging: boolean = false;
@@ -119,7 +117,8 @@ export class EntityFormBuilderField implements OnInit {
 
   constructor(
     public mockDataSvc: MockData,
-    public entityFormSvc: EntityFormService
+    public entityFormSvc: EntityFormService,
+    private cd: ChangeDetectorRef
   ) {
     
   }
@@ -166,6 +165,10 @@ export class EntityFormBuilderField implements OnInit {
     this.field.__builderRules.push({ type: 'hidden' });
   }
 
+  onAddField() {
+    this.entityFormSvc.onAddField(this.hostId!, this.field.fieldGroup);
+  }
+
   onEditField() {
     if (this.field && this.field.type === 'belongs-to') {
       if (!this.field.props) {
@@ -178,44 +181,11 @@ export class EntityFormBuilderField implements OnInit {
     this._showDrawer = true;
   }
 
-  onRemoveField() {
-    const fieldIndex = this.fieldGroup.findIndex((f: any) => f === this.field);
-    if (fieldIndex !== -1) {
-      this.fieldGroup.splice(fieldIndex, 1);
-    }
-
-    this.formSpecChange.next();
-  }
-
   onRemoveRule(index: number) {
     if (this.field.__builderRules && index >= 0 && index < this.field.__builderRules.length) {
       this.field.__builderRules.splice(index, 1);
     }
   }
-
-  onChangeFieldKey(index: number, event: any) {
-    // this._resetField();
-    this._setFieldTypesForField();
-    // this._disableUsedFieldSpecs();
-  }
-
-  onChangeFieldType(index: number, event: any) {
-    // const _field = this._formSpec.fields[index];
-
-    // if (_field.type == FieldType.BELONGS_TO.code) {
-    //   // Set default props for belongs-to
-    //   if (!_field.props) {
-    //     _field.props = {};
-    //   }
-    //   _field.props['fromEntity'] = this.hostId;
-    //   _field.props['toEntity'] = '';
-    //   _field.props['fromField'] = _field.key;
-    //   _field.props['toField'] = '';
-    //   _field.props['displayField'] = '';
-    // }
-
-    // this.formSpecChange.next();
-  } 
 
   onDragStart(event: DragEvent, _field: FormlyFieldConfig, _index: number) {
     console.log('Drag Start for field:', _index, event, _field);

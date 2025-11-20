@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { MockData, TableColumnInfo } from '../../services/mock-data';
@@ -80,27 +80,20 @@ export class EntityFormBuilder implements OnInit {
   @ViewChild('editFieldDrawer') editFieldDrawer!: Drawer;
   @ViewChild('contextMenu', { static: false }) contextMenu!: ContextMenu;
 
-  fieldList: TableColumnInfo[] = [];
   showDropzones: boolean = false;
 
   constructor(
     public mockDataSvc: MockData,
-    public entityFormSvc: EntityFormService
+    public entityFormSvc: EntityFormService,
+    private cd: ChangeDetectorRef
   ) {
     
   }
 
   async ngOnInit() {
-    if (this.hostId) {
-      try {
-        this.fieldList = this.mockDataSvc.tableInfo[this.hostId].columns;
-        this.entityFormSvc.refreshIDs(this.hostId);
-      } catch (error) {
-      }
-    }
   }
 
   async onSave() {
-    this.entityFormSvc.onSaveSpec(this.hostId!, this.entityFormSvc.formSpec[this.hostId!]);
+    this.entityFormSvc.onSaveSpec(this.hostId!);
   }
 }
