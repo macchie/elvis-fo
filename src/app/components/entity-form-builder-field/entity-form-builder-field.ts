@@ -82,7 +82,6 @@ export class EntityFormBuilderField implements OnInit {
   @Input() hostId?: string;
 
   @Input() showDropzones: boolean = false;
-  _isDragging: boolean = false;
   @Output() isDragging: Subject<boolean> = new Subject<boolean>();
 
   // public _formSpec!: any;
@@ -115,6 +114,12 @@ export class EntityFormBuilderField implements OnInit {
     { label: 'Clear Fields', value: 'CLEAR_FIELDS' },
   ];
 
+   get _isDragging(): boolean {
+    return this.entityFormSvc.isDragSource(this.hostId!, this.field.id);
+  }
+
+  // _isDragging: boolean = false;
+
   constructor(
     public mockDataSvc: MockData,
     public entityFormSvc: EntityFormService,
@@ -136,20 +141,21 @@ export class EntityFormBuilderField implements OnInit {
     this.field.fieldGroup = this.field.fieldGroup || [];
   }
 
-  // openContextMenu(event: MouseEvent, _field: any, _index: number): void {
+  // openContextMenu(event: MouseEvent, _field: ElvisFormlyFieldConfig): void {
+  //   console.log('Open context menu for field:', _field);
   //   this.fieldContextMenuItems = [
   //     { 
   //       label: 'Add Field Before', 
   //       icon: 'pi pi-angle-double-left',
   //       command: (event: any) => {
-  //         this._addFieldBefore(_index);
+  //         // this._addFieldBefore(_index);
   //       }
   //     },
   //     { 
   //       label: 'Add Field After', 
   //       icon: 'pi pi-angle-double-right' ,
   //       command: (event: any) => {
-  //         this._addFieldAfter(_index);
+  //         // this._addFieldAfter(_index);
   //       }
   //     }
   //   ];
@@ -187,40 +193,93 @@ export class EntityFormBuilderField implements OnInit {
     }
   }
 
-  onDragStart(event: DragEvent, _field: FormlyFieldConfig, _index: number) {
-    console.log('Drag Start for field:', _index, event, _field);
-    // this._draggingFieldIndex = _index;
-    this._isDragging = true;
+  onDragStart(event: DragEvent) {
+    if (!this.entityFormSvc.dragData[this.hostId!]) {
+      console.log('Drag Start for field:', this.field);
+      this.entityFormSvc.dragData[this.hostId!] = {
+        field: this.field,
+        fieldGroup: this.fieldGroup,
+      };
+    }
+
     this.isDragging.next(true);
   }
-
+  
   onDragEnd(event: DragEvent) {
-    console.log('Drag End for field:', event);
-    // this._draggingFieldIndex = -1;
-    this._isDragging = false;
+    if (this.entityFormSvc.dragData[this.hostId!]) {
+      console.log('Drag End for field:', this.entityFormSvc.dragData[this.hostId!]);
+    }
+    delete this.entityFormSvc.dragData[this.hostId!];
     this.isDragging.next(false);
   }
 
-  onDrop(event: DragEvent, _field: ElvisFormlyFieldConfig) {
-    console.log('Drop event:', _field);
-    // if (this._draggingFieldIndex === -1 || this._draggingFieldIndex === _index) {
-    //   this.isDragging = false;
-    //   return;
-    // }
+  onDrop(event: DragEvent, _options: { endSide?: boolean, atChildIndex?: number } = {}) {
+    if (this.entityFormSvc.dragData[this.hostId!]) {
+      if (_options.atChildIndex !== undefined && this.field.fieldGroup) {
+        console.log('Drop on field:', this.field.id, this.field.fieldGroup, 'at child index:', _options.atChildIndex);
 
-    // const draggedField = this._formSpec.fields[this._draggingFieldIndex];
-    // // Remove dragged field from its original position
-    // this._formSpec.fields.splice(this._draggingFieldIndex, 1);
-    // // Insert dragged field at the new position
+        if (_options.endSide) {
+          // Insert after
+          const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
+          // Remove dragged field from its original position
+          const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
+          const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
+          if (originalIndex !== -1) {
+            originalFieldGroup.splice(originalIndex, 1);
+          }
+          // Insert dragged field at the new position
+          this.field.fieldGroup.splice(_options.atChildIndex + 1, 0, draggedField);
+        } else {
+          // Insert before
+          const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
+          // Remove dragged field from its original position
+          const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
+          const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
+          
+          if (originalIndex !== -1) {
+            originalFieldGroup.splice(originalIndex, 1);
+          }
+          
+          // Insert dragged field at the new position
+          this.field.fieldGroup.splice(_options.atChildIndex, 0, draggedField);
+        }
+      } else {
+        console.log('Drop on field:', this.field.id, this.fieldGroup);
 
-    // if (_endSide) {
-    //   _index = _index - 1;
-    // }
+        const _fieldIndex = this.fieldGroup.findIndex((f: any) => f.id === this.field.id);
+        console.log('Field index in parent fieldGroup:', _fieldIndex);
 
-    // this._formSpec.fields.splice(_index, 0, draggedField);
+        if (_options.endSide) {
+          // Insert after
+          const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
+          // Remove dragged field from its original position
+          const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
+          const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
+          if (originalIndex !== -1) {
+            originalFieldGroup.splice(originalIndex, 1);
+          }
+          // Insert dragged field at the new position
+          this.fieldGroup.splice(_fieldIndex + 1, 0, draggedField);
+        } else {
+          // Insert before
+          const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
+          // Remove dragged field from its original position
+          const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
+          const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
+          
+          if (originalIndex !== -1) {
+            originalFieldGroup.splice(originalIndex, 1);
+          }
+          
+          // Insert dragged field at the new position
+          this.fieldGroup.splice(_fieldIndex, 0, draggedField);
+        }
+      }
 
-    // this._draggingFieldIndex = -1;
-
+      delete this.entityFormSvc.dragData[this.hostId!];
+      this.entityFormSvc.refreshIDs(this.hostId!);
+    }
+    
     this.isDragging.next(false);
   }
 

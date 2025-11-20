@@ -1,189 +1,200 @@
 
-<p-contextmenu #contextMenu [model]="fieldContextMenuItems" />
+<div class="flex flex-row items-stretch justify-stretch">
 
-<div 
-  id="field-spec" class="p-2 bg-primary-100 rounded-xl" [class.drag-source]="_isDragging"
-  pDraggable 
-  (onDragStart)="onDragStart($event, field, 0)" 
-  (onDragEnd)="onDragEnd($event)" 
->
-  <!-- (contextmenu)="openContextMenu($event, field)" -->
+  <div pDroppable (onDrop)="onDrop($event)" [hidden]="!showDropzones || _isDragging" class="drop-zone"></div>
 
-  <div class="dropzone" pDroppable [hidden]="!showDropzones || _isDragging" (onDrop)="onDrop($event, field)"></div>
-  <!-- <div class="dropzone-after" [hidden]="!isDragging"></div> -->
+  <div 
+    id="field-spec" 
+    class="flex-1 {{field.__builderType}}-{{field.__builderType === 'layout' ? field.__builderWrapper : field.type}}" 
+    [class.drag-source]="_isDragging"
+    pDraggable 
+    (onDragStart)="onDragStart($event)" 
+    (onDragEnd)="onDragEnd($event)" 
+  >
 
-  <div id="toolbar" class="flex flex-row items-center justify-between px-1" [class.mb-2]="true">
-    <div class="flex flex-row items-center justify-between gap-4">
+    <div class="add-button" [hidden]="showDropzones || _isDragging">
+      <div class="add-button-content">
+        <img src="assets/icons/add-column-start.svg" alt="">
+      </div>
+    </div>
+    
+    <div class="add-button end" [hidden]="showDropzones || _isDragging">
+      <div class="add-button-content">
+        <img src="assets/icons/add-column-end.svg" alt="">
+      </div>
+    </div>
+   
+    <div id="toolbar" class="flex flex-row items-center justify-between px-1" [class.mb-2]="true">
+      <div class="flex flex-row items-center justify-between gap-4">
+        <!-- @if (field.__builderType === 'layout') {
+          @if (field.type === 'panel') {
+            <i class="pi pi-expand"></i>
+          }
+          @if (field.type === 'card') {
+            <i class="pi pi-clone"></i>
+          }
+          @if (field.type === 'accordion') {
+            <i class="pi pi-bars"></i>
+          }
+        } @else {
+          @if (field.type === 'input') {
+            <i class="pi pi-pen-to-square"></i>
+          }
+          @if (field.type === 'select' || field.type === 'has-many') {
+            <i class="pi pi-list"></i>
+          }
+          @if (field.type === 'datepicker') {
+            <i class="pi pi-calendar"></i>
+          }
+          @if (field.type === 'belongs-to') {
+            <i class="pi pi-link"></i>
+          }
+          @if (field.type === 'password') {
+            <i class="pi pi-key"></i>
+          }
+        } -->
+  
+        <p-select size="small" optionLabel="label" optionValue="value" [options]="entityFormSvc.sizeOptions" [(ngModel)]="field.className" />
+
+        <small class="font-medium text-slate-800 opacity-30">{{field.id}}</small>
+      </div>
+  
+      <div class="flex flex-row items-center justify-between">
+        <p-button class="mr-2" icon="pi pi-pen-to-square" severity="secondary" size="small" [outlined]="true" [rounded]="true" (click)="onEditField()" />
+        <p-button icon="pi pi-trash" severity="danger" size="small" [outlined]="true" [rounded]="true" (click)="entityFormSvc.onRemoveField(hostId!, fieldGroup, field)" />
+      </div>
+    </div>
+  
+    <div class="flex flex-col gap-2">
       @if (field.__builderType === 'layout') {
-        @if (field.type === 'panel') {
-          <i class="pi pi-expand"></i>
-        }
-        @if (field.type === 'card') {
-          <i class="pi pi-clone"></i>
-        }
-        @if (field.type === 'accordion') {
-          <i class="pi pi-bars"></i>
-        }
-      } @else {
-        @if (field.type === 'input') {
-          <i class="pi pi-pen-to-square"></i>
-        }
-        @if (field.type === 'select' || field.type === 'has-many') {
-          <i class="pi pi-list"></i>
-        }
-        @if (field.type === 'datepicker') {
-          <i class="pi pi-calendar"></i>
-        }
-        @if (field.type === 'belongs-to') {
-          <i class="pi pi-link"></i>
-        }
-        @if (field.type === 'password') {
-          <i class="pi pi-key"></i>
-        }
-      }
-
-      <p-select size="small" optionLabel="label" optionValue="value" [options]="entityFormSvc.sizeOptions" [(ngModel)]="field.className" />
-    </div>
-
-    <div>
-      <p-button class="mr-2" icon="pi pi-pen-to-square" severity="secondary" size="small" [outlined]="true" [rounded]="true" (click)="onEditField()" />
-      <p-button icon="pi pi-trash" severity="danger" size="small" [outlined]="true" [rounded]="true" (click)="entityFormSvc.onRemoveField(hostId!, fieldGroup, field)" />
-    </div>
-  </div>
-
-  <div class="flex flex-col gap-2">
-    <small>ID: {{field.id}}</small>
-
-    @if (field.__builderType === 'layout') {
-      @if (field.__builderWrapper == 'panel') {
-        @for (_groupField of field.fieldGroup; track $index) {
-          <app-entity-form-builder-field [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup" class="{{field.className}}"></app-entity-form-builder-field>
-        }
-        @if (hostId && !showDropzones) {
-          <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
-          </div>
-        }
-      }
-
-      @if (field.__builderWrapper == 'accordion') {
-        @if(!showDropzones) {
-          <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
-          </div>
-        }
-
-        <div class="dropzone-row col-span-12" pDroppable [hidden]="!showDropzones || _isDragging" (onDrop)="onDrop($event, field)"></div>
-
-        <div class=" bg-primary-100 rounded-lg">
-          <p-accordion>
-            @for (_groupField of field.fieldGroup; track $index) {
-              <p-accordion-panel [value]="$index">
-                <p-accordion-header>{{ _groupField.key }}</p-accordion-header>
-                <p-accordion-content>
-                  <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
-                </p-accordion-content>
-              </p-accordion-panel>
-            }
-          </p-accordion>
-        </div>
-      }
-
-      @if (field.__builderWrapper == 'tabs') {
-        <div class=" bg-primary-100 rounded-lg">
-          <p-tabs [value]="0">
-            <p-tablist>
-              @for (_groupField of field.fieldGroup; track $index) {
-                <p-tab [value]="$index">{{ _groupField.props?.label || _groupField.key }}</p-tab>
-              }
-            </p-tablist>
-            <p-tabpanels>
-              @for (_groupField of field.fieldGroup; track $index) {
-                <p-tabpanel [value]="$index">
-                  <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
-                </p-tabpanel>
-              }
-            </p-tabpanels>
-          </p-tabs>
-        </div>
-
-        <div class="dropzone-row col-span-12" pDroppable [hidden]="!showDropzones || _isDragging" (onDrop)="onDrop($event, field)"></div>
-
-        @if(!showDropzones) {
-          <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
-            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
-          </div>
-        }
-      }
-
-      @if (field.__builderWrapper == 'card') {
-        <p-card>
+        @if (field.__builderWrapper == 'panel') {
           <div class="grid grid-cols-12 gap-4">
             @for (_groupField of field.fieldGroup; track $index) {
-              <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup"></app-entity-form-builder-field>
-            }
-
-            <div class="dropzone-row col-span-12" pDroppable [hidden]="!showDropzones || _isDragging" (onDrop)="onDrop($event, field)"></div>
-
-            @if(!showDropzones) {
-              <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg col-span-12">
-                <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
-              </div>
+              <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup" [showDropzones]="showDropzones"></app-entity-form-builder-field>
             }
           </div>
-        </p-card>
-      }
-    }
-    
-    @if (field.__builderType === 'input') {
-      <label [for]="field.key">
-        {{field.props!.label || field.key}}
-        @if (field.props!.required) {
-          <span class="text-red-600">*</span>
+          
+          <div class="flex flex-row items-center justify-center mt-2 py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+            <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
+          </div>
         }
-      </label>
 
-      @if (field.type === 'input' || field.type === 'integer' || field.type === 'select' || field.type === 'password') {
-        <input
-          pInputText fluid
-          [type]="field.type === 'integer' ? 'integer' : 'text'"
-          id="{{field.key}}"
-          name="{{field.key}}"
-          placeholder="{{field.props!.placeholder}}"
-          disabled="true"
-        />
-      }
+        @if (field.__builderWrapper == 'card') {
+          <p-card>
+            <div class="grid grid-cols-12 gap-4">
+              @for (_groupField of field.fieldGroup; track $index) {
+                <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup" [showDropzones]="showDropzones"></app-entity-form-builder-field>
+              }
+            
+              <div class="flex flex-row items-center justify-center mt-2 py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg col-span-12">
+                <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
+              </div>
+            </div>
+          </p-card>
+          }
+        }
+  
+        @if (field.__builderWrapper == 'accordion') {
+          @if(!showDropzones) {
+            <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+              <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
+            </div>
+          }
+  
+          <div class=" bg-primary-100 rounded-lg">
+            <p-accordion>
+              @for (_groupField of field.fieldGroup; track $index) {
+                <p-accordion-panel [value]="$index">
+                  <p-accordion-header>{{ _groupField.key }}</p-accordion-header>
+                  <p-accordion-content>
+                    <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup" [showDropzones]="showDropzones"></app-entity-form-builder-field>
+                  </p-accordion-content>
+                </p-accordion-panel>
+              }
+            </p-accordion>
+          </div>
+        }
+  
+        @if (field.__builderWrapper == 'tabs') {
+          <div class=" bg-primary-100 rounded-lg">
+            <p-tabs [value]="0">
+              <p-tablist>
+                @for (_groupField of field.fieldGroup; track $index) {
+                  <p-tab [value]="$index">{{ _groupField.props?.label || _groupField.key }}</p-tab>
+                }
+              </p-tablist>
+              <p-tabpanels>
+                @for (_groupField of field.fieldGroup; track $index) {
+                  <p-tabpanel [value]="$index">
+                    <app-entity-form-builder-field class="{{_groupField.className}}" [hostId]="hostId" [field]="_groupField" [fieldGroup]="field.fieldGroup" [showDropzones]="showDropzones"></app-entity-form-builder-field>
+                  </p-tabpanel>
+                }
+              </p-tabpanels>
+            </p-tabs>
+          </div>
+  
+          @if(!showDropzones) {
+            <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+              <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="onAddField()"></p-button>
+            </div>
+          }
+        }
 
-      @if (field.type == 'datepicker') {
-        @if (field.props!.readonly) {
-          <small>{{'2025-03-07 04:00:00' | date:'medium'}}</small>
-        } @else {
+        
+      
+      @if (field.__builderType === 'input') {
+        <label [for]="field.key">
+          {{field.props!.label || field.key}}
+          @if (field.props!.required) {
+            <span class="text-red-600">*</span>
+          }
+        </label>
+  
+        @if (field.type === 'input' || field.type === 'integer' || field.type === 'select' || field.type === 'password') {
           <input
             pInputText fluid
-            type="text"
+            [type]="field.type === 'integer' ? 'integer' : 'text'"
             id="{{field.key}}"
             name="{{field.key}}"
             placeholder="{{field.props!.placeholder}}"
             disabled="true"
           />
         }
-      }
-
-      @if (field.type == 'belongs-to') {
-        @if (field.props.mode == 'select') {
-          <p-select fluid disabled placeholder="Select"></p-select>
-        } @else {
-          <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
-            <p-button disabled icon="pi pi-eye" variant="outlined" severity="info" />
-            <p-button fluid disabled class="grow" [label]="field.props!.placeholder || 'Select'" variant="outlined" severity="secondary" />
-            <p-button disabled icon="pi pi-times" variant="outlined"
-              severity="danger" />
-          </p-buttongroup>
+  
+        @if (field.type == 'datepicker') {
+          @if (field.props!.readonly) {
+            <small>{{'2025-03-07 04:00:00' | date:'medium'}}</small>
+          } @else {
+            <input
+              pInputText fluid
+              type="text"
+              id="{{field.key}}"
+              name="{{field.key}}"
+              placeholder="{{field.props!.placeholder}}"
+              disabled="true"
+            />
+          }
+        }
+  
+        @if (field.type == 'belongs-to') {
+          @if (field.props.mode == 'select') {
+            <p-select fluid disabled placeholder="Select"></p-select>
+          } @else {
+            <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
+              <p-button disabled icon="pi pi-eye" variant="outlined" severity="info" />
+              <p-button fluid disabled class="grow" [label]="field.props!.placeholder || 'Select'" variant="outlined" severity="secondary" />
+              <p-button disabled icon="pi pi-times" variant="outlined"
+                severity="danger" />
+            </p-buttongroup>
+          }
         }
       }
-    }
+    </div>
   </div>
+
+  <div pDroppable (onDrop)="onDrop($event, { endSide: true })" [hidden]="!showDropzones || _isDragging || field != fieldGroup[fieldGroup.length -1]" class="drop-zone end"></div>
 </div>
+
 
 <p-drawer [(visible)]="_showDrawer" #editFieldDrawer [header]="field.props!.label || field.type" position="right" styleClass="!w-full md:!w-80 lg:!w-[50rem]">
   <div class="flex flex-col gap-4">

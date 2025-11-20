@@ -23,10 +23,12 @@
   </p-toolbar>
 }
 
-<div id="entity-form" class="bg-primary-50 rounded-lg p-4">
+<div id="entity-form">
   @if (!loading) {
     @if (editMode && !readonly) {
-      <app-entity-form-builder #entityFormBuilder [hostId]="hostId" (formSpecSaved)="onEditForm()"></app-entity-form-builder>
+      <div class="px-2 py-4">
+        <app-entity-form-builder #entityFormBuilder [hostId]="hostId" (formSpecSaved)="onEditForm()"></app-entity-form-builder>
+      </div>
     } @else {
       @if (form && entityFormSvc.formSpec[hostId!]) {
         <form [formGroup]="form">

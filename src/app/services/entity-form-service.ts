@@ -11,6 +11,10 @@ export class EntityFormService {
   private _CACHE: { [key: string]: Set<string> } = { };
 
   public formSpec: { [key: string]: FormSpec; } = {};
+  public dragData: { [key: string]: {
+    field: ElvisFormlyFieldConfig;
+    fieldGroup: ElvisFormlyFieldConfig[];
+  }; } = {};
 
   ruleTypes: Record<string, string>[] = [
     { label: 'Hidden', value: 'hidden' },
@@ -58,7 +62,6 @@ export class EntityFormService {
       this.formSpec[_spec.host_id] = _spec.data;
       await this.refreshIDs(_spec.host_id);
     }
-
   }
 
   getNewField(): ElvisFormlyFieldConfig {
@@ -76,6 +79,14 @@ export class EntityFormService {
   refreshIDs(_key: string) {
     this._CACHE[_key] = new Set<string>();
     this._generateIDs(_key);
+  }
+  
+  isDragSource(_hostId: string, _key: string): boolean {
+    try {
+      return this.dragData[_hostId].field.id === _key;
+    } catch (error) {
+      return false;      
+    }
   }
 
   onAddField(_key: string, _fields: ElvisFormlyFieldConfig[]) {
@@ -172,6 +183,7 @@ export class EntityFormService {
   private _prepareForSave(_key: string, _fields: ElvisFormlyFieldConfig[]) {
     for (const _fieldSpec of _fields) {
       if (_fieldSpec.__builderType === 'layout') {
+        delete _fieldSpec['type'];
         _fieldSpec.wrappers = [];
 
         if (_fieldSpec.__builderWrapper) {

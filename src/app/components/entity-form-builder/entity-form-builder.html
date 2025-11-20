@@ -6,8 +6,7 @@
       [field]="_field"
       [fieldGroup]="entityFormSvc.formSpec[hostId!].fields"
       [hostId]="hostId"
-      [showDropzones]="showDropzones"
-      (isDragging)="showDropzones = $event"
+      [showDropzones]="entityFormSvc.dragData[hostId!] != null && entityFormSvc.dragData[hostId!] != undefined"
     ></app-entity-form-builder-field>
   } 
 
