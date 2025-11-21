@@ -8,6 +8,7 @@ import { FormlyFieldInput } from './input.type';
 import { withFormlyFieldInput } from './input.config';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { FloatLabelModule } from 'primeng/floatlabel';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
     InputTextModule,
     InputGroupModule,
     InputGroupAddonModule,
+    FloatLabelModule,
     FormlyModule.forChild(withFormlyFieldInput()),
   ],
 })

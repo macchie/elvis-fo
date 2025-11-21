@@ -11,7 +11,7 @@ export interface FormlyFieldProps extends CoreFormlyFieldProps {
   selector: 'formly-wrapper-elvisfo-card-wrapper',
   styleUrl: './card-wrapper.wrapper.scss',
   template: `
-    <p-card class="mt-0">
+    <p-card class="mt-0" [header]="field.props?.label || undefined">
       <div class="flex flex-col gap-2">
         <ng-container #fieldComponent></ng-container>
       </div>

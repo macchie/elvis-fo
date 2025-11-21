@@ -22,49 +22,49 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<InputProps> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './input.type.scss',
   template: `
-    <div class="mb-2">
+    <p-floatlabel variant="on">
+
+      <p-inputgroup>
+        @if (props.prefixIcon || props.prefixText) {
+          <p-inputgroup-addon>
+            @if (props.prefixIcon) {
+              <i [class]="props.prefixIcon"></i>
+            }
+            @if (props.prefixText) {
+              <span [innerHTML]="props.prefixText"></span>
+            }
+          </p-inputgroup-addon>
+        }
+
+        <input
+          pInputText fluid
+          [type]="props.type || 'text'"
+          [formControl]="formControl"
+          [formlyAttributes]="field"
+        />
+        <!-- @if (props.type !== 'number') {
+        } @else {
+          <input pInputText fluid type="number" [formControl]="formControl" [formlyAttributes]="field" />
+        } -->
+
+        @if (props.suffixIcon || props.suffixText) {
+          <p-inputgroup-addon>
+            @if (props.suffixIcon) {
+              <i [class]="props.suffixIcon"></i>
+            }
+            @if (props.suffixText) {
+              <span [innerHTML]="props.suffixText"></span>
+            }
+          </p-inputgroup-addon>
+        }
+      </p-inputgroup>
       <label [for]="id">
         {{ props.label || key }}
         @if (form.enabled && props.required && props.hideRequiredMarker !== true) {
           <span class="text-red-600" aria-hidden="true">*</span>
         }
       </label>
-    </div>
-
-    <p-inputgroup>
-      @if (props.prefixIcon || props.prefixText) {
-        <p-inputgroup-addon>
-          @if (props.prefixIcon) {
-            <i [class]="props.prefixIcon"></i>
-          }
-          @if (props.prefixText) {
-            <span [innerHTML]="props.prefixText"></span>
-          }
-        </p-inputgroup-addon>
-      }
-
-      <input
-        pInputText fluid
-        [type]="props.type || 'text'"
-        [formControl]="formControl"
-        [formlyAttributes]="field"
-      />
-      <!-- @if (props.type !== 'number') {
-      } @else {
-        <input pInputText fluid type="number" [formControl]="formControl" [formlyAttributes]="field" />
-      } -->
-
-      @if (props.suffixIcon || props.suffixText) {
-        <p-inputgroup-addon>
-          @if (props.suffixIcon) {
-            <i [class]="props.suffixIcon"></i>
-          }
-          @if (props.suffixText) {
-            <span [innerHTML]="props.suffixText"></span>
-          }
-        </p-inputgroup-addon>
-      }
-    </p-inputgroup>
+    </p-floatlabel>
     
     @if (props.helpText) {
       <small [innerHTML]="props.helpText"></small>

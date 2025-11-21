@@ -3,12 +3,17 @@
   position: relative;
   width: 100%;
   box-sizing: border-box;
-  box-shadow: 0 0 0 1px var(--p-primary-300);
-  padding: 12px 16px;
-  border-radius: 16px;
-  background: var(--p-primary-50);
-  overflow: hidden;
-   
+  box-shadow: 0 0 0 1px var(--p-slate-300);
+  /* padding: 12px 16px; */
+  border-radius: 4px;
+  background: var(--p-slate-100);
+
+  #field-toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 
   .add-button {
     position: absolute;
@@ -19,32 +24,44 @@
     align-items: center;
     justify-content: flex-start;
     width: 16px;
-    z-index: 2;
+    z-index: 20;
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
     transition: all ease-out .1s;
-    background: linear-gradient(90deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, 0));
-    opacity: 1;
+    background: rgba(255,255,255,.6);
+    opacity: 0;
+    backdrop-filter: blur(4px) saturate(180%);
 
     &.end {
       left: auto;
       right: 0;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
       
       .add-button-content {
         left: auto;
         right: 0;
         border-top-right-radius: 0px;
         border-bottom-right-radius: 0px;
-        border-top-left-radius: 8px;
-        border-bottom-left-radius: 8px;
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
         box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+
+        &:active {
+          box-shadow: -2px 0 4px var(--p-sky-300);
+        }
       }
     }
 
     &:hover {
       opacity: 1;
+      width: 64px;
 
       .add-button-content {
         opacity: 1;
-        pointer-events: auto;
+        pointer-events: all;
       }
     }
     
@@ -53,19 +70,17 @@
       left: 0;
       top: 50%;
       transform: translateY(-50%);
-      z-index: 4;
       display: flex;
       align-items: center;
       justify-content: center;
       width: 32px;
       height: 64px;
-      border-top-right-radius: 8px;
-      border-bottom-right-radius: 8px;
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
       background: white;
       box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
       cursor: pointer;
-      transition: ease-out opacity .1s;
-      opacity: 0;
+      transition: all ease-out .1s;
       pointer-events: none;
   
       img {
@@ -75,23 +90,27 @@
         object-position: center;
       }
 
+      &:hover {
+        width: 36px;
+      }
+
       &:active {
-        opacity: .85;
+        box-shadow: 2px 0 4px var(--p-sky-300);
       }
     }
   }
 
 
   &.input-belongs-to {
-    box-shadow: 0 0 0 1px var(--p-orange-300);
+    /* box-shadow: 0 0 0 1px var(--p-orange-300); */
   }
 
   &.layout-card {
-    box-shadow: 0 0 0 1px var(--p-yellow-300);
+    /* box-shadow: 0 0 0 1px var(--p-yellow-300); */
   }
 
   &.layout-panel {
-    box-shadow: 0 0 0 1px var(--p-sky-300);
+    /* box-shadow: 0 0 0 1px var(--p-sky-300); */
 
     #field-spec {
       background: white;
@@ -116,9 +135,10 @@
   position: relative;
   display: flex;
   width: 20px;
+  min-width: 20px;
   height: auto;
-  background: var(--p-blue-50);
-  border: 2px dashed var(--p-blue-500);
+  background: var(--p-sky-50);
+  border: 2px dashed var(--p-sky-500);
   border-radius: 16px;
   margin-right: 16px;
   margin-left: 0;
@@ -126,6 +146,9 @@
   &.end {
     margin-right: 0;
     margin-left: 16px;
+
+    background: var(--p-rose-50);
+    border: 2px dashed var(--p-rose-500);
   }
 
   &::hover {

@@ -32,35 +32,42 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps
       [formlyAttributes]="field"
     />
 
-    <div class="mb-2">
-      <label [for]="id">
-        {{ props.label || key }}
-        @if (form.enabled && props.required) {
-          <span class="text-red-600" aria-hidden="true">*</span>
-        }
-      </label>
-    </div>
-
     @if (props.mode === 'select') {
-      <p-select 
-        fluid 
-        [options]="_selectOptions" 
-        [filter]="true" 
-        [filterBy]="props.displayField || props.toField" 
-        [optionLabel]="props.displayField || props.toField" 
-        [optionValue]="props.toField" 
-        [formControl]="formControl" 
-        [formlyAttributes]="field" 
-        [placeholder]="'Select'"
-        [disabled]="props.disabled!"
-        [showClear]="true"
-      />
+      <p-floatlabel variant="on">
+        <p-select 
+          fluid 
+          [options]="_selectOptions" 
+          [filter]="true" 
+          [filterBy]="props.displayField || props.toField" 
+          [optionLabel]="props.displayField || props.toField" 
+          [optionValue]="props.toField" 
+          [formControl]="formControl" 
+          [formlyAttributes]="field" 
+          [placeholder]="'Select'"
+          [disabled]="props.disabled!"
+          [showClear]="true"
+        />
+        <label [for]="id">
+          {{ props.label || key }}
+          @if (form.enabled && props.required) {
+            <span class="text-red-600" aria-hidden="true">*</span>
+          }
+        </label>
+      </p-floatlabel>
     } @else {
-      <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
-        <p-button (click)="onPreview()" [disabled]="!formControl.value || props.disabled" icon="pi pi-eye" variant="outlined" severity="info"/>
-        <p-button fluid (click)="onSelect(); op.toggle($event)" [disabled]="props.disabled" class="grow" [label]="formControl.value || (props.placeholder || 'Select')" variant="outlined" severity="secondary" />
-        <p-button (click)="onClear()" [disabled]="!formControl.value || props.disabled" icon="pi pi-times" variant="outlined" severity="danger" />
-      </p-buttongroup>
+      <div class="flex flex-row items-center justify-between gap-2">
+        <label [for]="id">
+          {{ props.label || key }}
+          @if (form.enabled && props.required) {
+            <span class="text-red-600" aria-hidden="true">*</span>
+          }
+        </label>
+        <p-buttongroup class="belongs-to flex flex-col basis-full" [style]="{ width: '100% !important' }">
+          <p-button (click)="onPreview()" [disabled]="!formControl.value || props.disabled" icon="pi pi-eye" variant="outlined" severity="info"/>
+          <p-button fluid (click)="onSelect(); op.toggle($event)" [disabled]="props.disabled" class="grow" [label]="formControl.value || (props.placeholder || 'Select')" variant="outlined" severity="secondary" />
+          <p-button (click)="onClear()" [disabled]="!formControl.value || props.disabled" icon="pi pi-times" variant="outlined" severity="danger" />
+        </p-buttongroup>
+      </div>
     }
 
     <p-popover #op>

@@ -111,3 +111,51 @@ p-buttongroup.belongs-to {
     }
   }
 }
+
+#field-toolbar {
+  background: rgba(0,0,100,.033);
+  padding: 0 0 0 4px;
+
+  .p-select {
+    height: 20px;
+    padding: 0;
+  }
+
+  .p-button {
+    border-radius: 4px;
+  }
+  
+  .p-select-label {
+    height: 20px;
+    min-height: 20px;
+    line-height: 18px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 0 8px;
+  }
+
+  .p-select-dropdown {
+    width: 16px;
+    height: 20px;
+    min-height: 20px;
+    line-height: 18px;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 0 8px 0 0;
+  }
+
+  .p-button {
+    height: 28px;
+    min-height: 28px;
+    line-height: 26px;
+
+    &:hover {
+      background: rgba(0,0,0,.0375);
+    }
+    
+    .p-button-icon {
+      font-size: 13px;
+    }
+  }
+
+}

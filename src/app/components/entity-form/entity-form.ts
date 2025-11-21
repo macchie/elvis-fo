@@ -67,6 +67,8 @@ export class EntityForm implements OnInit {
     this.form = new FormGroup({});
 
     if (this.hostId) {
+      this.entityId = 147;
+      
       if (this.entityId !== undefined) {
         this.model = await this.mockDataSvc.getEntity(this.hostId, this.entityId);
       }

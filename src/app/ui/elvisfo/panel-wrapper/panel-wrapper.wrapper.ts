@@ -11,9 +11,12 @@ export interface FormlyFieldProps extends CoreFormlyFieldProps {
   selector: 'formly-wrapper-elvisfo-panel-wrapper',
   styleUrl: './panel-wrapper.wrapper.scss',
   template: `
-    <div class="flex flex-col gap-2">
+    <!-- <div class="flex flex-col gap-2">
       <ng-container #fieldComponent></ng-container>
-    </div>
+    </div> -->
+    <p-panel [header]="field.props?.label || undefined">
+      <ng-container #fieldComponent></ng-container>
+    </p-panel>
   `,
   standalone: false
 })

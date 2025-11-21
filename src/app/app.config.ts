@@ -10,10 +10,11 @@ import { routes } from './app.routes';
 import { provideFormlyCore } from '@ngx-formly/core';
 import { withFormlyElvisFO } from './ui/elvisfo/ui-elvisfo.config';
 import { provideHttpClient } from '@angular/common/http';
-import { MockData } from './services/mock-data';
 import { appInitializer } from './app.initializer';
 
 const THEME_COLOR = 'slate';
+// const THEME_COLOR = 'zinc';
+// const THEME_COLOR = 'stone';
 
 const MyPreset = definePreset(Aura, {
     semantic: {

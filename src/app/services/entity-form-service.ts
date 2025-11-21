@@ -182,6 +182,8 @@ export class EntityFormService {
 
   private _prepareForSave(_key: string, _fields: ElvisFormlyFieldConfig[]) {
     for (const _fieldSpec of _fields) {
+      delete _fieldSpec['hide'];
+      
       if (_fieldSpec.__builderType === 'layout') {
         delete _fieldSpec['type'];
         _fieldSpec.wrappers = [];
@@ -201,22 +203,18 @@ export class EntityFormService {
       }
 
       if (!_fieldSpec.props!.label || _fieldSpec.props!.label.trim() === '') {
-        _fieldSpec.props!.label = _fieldSpec.key as string;
+        _fieldSpec.props!.label = _fieldSpec.__builderType === 'input' ?  _fieldSpec.key!.toString() : undefined;
       }
 
       _fieldSpec.expressions = {};
+      _fieldSpec.resetOnHide = false;
+      _fieldSpec.hide = false;
       
       if (_fieldSpec.__builderRules && _fieldSpec.__builderRules.length > 0) {
         for (const _rule of _fieldSpec.__builderRules) {
           const _expressionKey = _rule.type === 'disabled' ? 'props.disabled' : 'hide';
-
-          _fieldSpec.expressions[_expressionKey] = (_field: FormlyFieldConfig) => {
-            if (_rule.condition === 'IS NULL') {
-              return _field.form?.get(_rule.field!)?.value ? false : true;
-            } else {
-              return _field.form?.get(_rule.field!)?.value ? true : false;
-            }
-          }
+          const _expressionValue = `${_rule.condition === 'IS NULL' ? '!' : ''}model.${_rule.field}`;
+          _fieldSpec.expressions[_expressionKey] = _expressionValue;
         }
       }
     }

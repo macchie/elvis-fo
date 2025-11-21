@@ -26,18 +26,19 @@
 <div id="entity-form">
   @if (!loading) {
     @if (editMode && !readonly) {
-      <div class="px-2 py-4">
+      <div class="px-0 py-4">
         <app-entity-form-builder #entityFormBuilder [hostId]="hostId" (formSpecSaved)="onEditForm()"></app-entity-form-builder>
       </div>
     } @else {
       @if (form && entityFormSvc.formSpec[hostId!]) {
         <form [formGroup]="form">
           <formly-form #formlyForm 
-            [form]="form"
-            [fields]="entityFormSvc.formSpec[hostId!].fields || []"
-            [model]="model"
+          [form]="form"
+          [fields]="entityFormSvc.formSpec[hostId!].fields || []"
+          [model]="model"
           ></formly-form>
         </form>
+        <!-- <pre class="pt-8">{{model|json}}</pre> -->
       }
     }
   }

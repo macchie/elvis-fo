@@ -19,15 +19,13 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { Drawer, DrawerModule } from 'primeng/drawer';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { Subject } from 'rxjs';
-import { ElvisFormlyFieldConfig, FormSpec } from '../../interfaces/form-spec.interface';
+import { ElvisFormlyFieldConfig } from '../../interfaces/form-spec.interface';
 import { DragDropModule } from 'primeng/dragdrop';
-import { FormlyFieldConfig } from '@ngx-formly/core';
 import { CardModule } from 'primeng/card';
 import { AccordionModule } from 'primeng/accordion';
 import { TabsModule } from 'primeng/tabs';
 import { FieldsetModule } from 'primeng/fieldset';
 import { EntityFormService } from '../../services/entity-form-service';
-
 
 export const FieldType = {
   INPUT: { code: 'input', name: 'Text Input' },
@@ -67,7 +65,8 @@ export const FieldType = {
     CardModule,
     AccordionModule,
     TabsModule,
-    FieldsetModule
+    FieldsetModule,
+    ToggleSwitchModule
   ],
   templateUrl: './entity-form-builder-field.html',
   styleUrl: './entity-form-builder-field.css',
@@ -77,7 +76,7 @@ export class EntityFormBuilderField implements OnInit {
   // new 
 
   @Input() field!: ElvisFormlyFieldConfig | any;
-  @Input() fieldGroup: ElvisFormlyFieldConfig[] | any;
+  // @Input() fieldGroup: ElvisFormlyFieldConfig[] | any;
 
   @Input() hostId?: string;
 
@@ -138,31 +137,8 @@ export class EntityFormBuilderField implements OnInit {
       }
     }
 
-    this.field.fieldGroup = this.field.fieldGroup || [];
+    // this.field.fieldGroup = this.field.fieldGroup || [];
   }
-
-  // openContextMenu(event: MouseEvent, _field: ElvisFormlyFieldConfig): void {
-  //   console.log('Open context menu for field:', _field);
-  //   this.fieldContextMenuItems = [
-  //     { 
-  //       label: 'Add Field Before', 
-  //       icon: 'pi pi-angle-double-left',
-  //       command: (event: any) => {
-  //         // this._addFieldBefore(_index);
-  //       }
-  //     },
-  //     { 
-  //       label: 'Add Field After', 
-  //       icon: 'pi pi-angle-double-right' ,
-  //       command: (event: any) => {
-  //         // this._addFieldAfter(_index);
-  //       }
-  //     }
-  //   ];
-
-  //   this.contextMenu.show(event);
-  //   event.stopPropagation();
-  // }
 
   onAddRule() {
     if (!this.field.__builderRules) {
@@ -198,7 +174,7 @@ export class EntityFormBuilderField implements OnInit {
       console.log('Drag Start for field:', this.field);
       this.entityFormSvc.dragData[this.hostId!] = {
         field: this.field,
-        fieldGroup: this.fieldGroup,
+        fieldGroup: this.field.parent.fieldGroup,
       };
     }
 
@@ -213,67 +189,49 @@ export class EntityFormBuilderField implements OnInit {
     this.isDragging.next(false);
   }
 
-  onDrop(event: DragEvent, _options: { endSide?: boolean, atChildIndex?: number } = {}) {
+  onDrop(event: DragEvent, _options: { endSide?: boolean } = {}) {
     if (this.entityFormSvc.dragData[this.hostId!]) {
-      if (_options.atChildIndex !== undefined && this.field.fieldGroup) {
-        console.log('Drop on field:', this.field.id, this.field.fieldGroup, 'at child index:', _options.atChildIndex);
+      console.log('Drop on field:', this.field.id, this.field.parent.fieldGroup);
 
-        if (_options.endSide) {
-          // Insert after
-          const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
-          // Remove dragged field from its original position
-          const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
-          const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
-          if (originalIndex !== -1) {
-            originalFieldGroup.splice(originalIndex, 1);
-          }
-          // Insert dragged field at the new position
-          this.field.fieldGroup.splice(_options.atChildIndex + 1, 0, draggedField);
-        } else {
-          // Insert before
-          const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
-          // Remove dragged field from its original position
-          const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
-          const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
-          
-          if (originalIndex !== -1) {
-            originalFieldGroup.splice(originalIndex, 1);
-          }
-          
-          // Insert dragged field at the new position
-          this.field.fieldGroup.splice(_options.atChildIndex, 0, draggedField);
+      let _fieldIndex = this.field.parent.fieldGroup.findIndex((f: any) => f.id === this.field.id);
+      console.log('Field index in parent fieldGroup:', _fieldIndex);
+
+      if (_options.endSide) {
+        // Insert after
+        const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
+        // Remove dragged field from its original position
+        const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
+        const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
+
+        // handle same field group drop to avoid index shift
+        if (originalFieldGroup === this.field.parent.fieldGroup && originalIndex < _fieldIndex) {
+          _fieldIndex--;
         }
+
+        if (originalIndex !== -1) {
+          originalFieldGroup.splice(originalIndex, 1);
+        }
+
+        // Insert dragged field at the new position
+        this.field.parent.fieldGroup.splice(_fieldIndex + 1, 0, draggedField);
       } else {
-        console.log('Drop on field:', this.field.id, this.fieldGroup);
+        // Insert before
+        const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
+        // Remove dragged field from its original position
+        const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
+        const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
 
-        const _fieldIndex = this.fieldGroup.findIndex((f: any) => f.id === this.field.id);
-        console.log('Field index in parent fieldGroup:', _fieldIndex);
-
-        if (_options.endSide) {
-          // Insert after
-          const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
-          // Remove dragged field from its original position
-          const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
-          const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
-          if (originalIndex !== -1) {
-            originalFieldGroup.splice(originalIndex, 1);
-          }
-          // Insert dragged field at the new position
-          this.fieldGroup.splice(_fieldIndex + 1, 0, draggedField);
-        } else {
-          // Insert before
-          const draggedField = this.entityFormSvc.dragData[this.hostId!].field;
-          // Remove dragged field from its original position
-          const originalFieldGroup = this.entityFormSvc.dragData[this.hostId!].fieldGroup;
-          const originalIndex = originalFieldGroup.findIndex((f: any) => f.id === draggedField.id);
-          
-          if (originalIndex !== -1) {
-            originalFieldGroup.splice(originalIndex, 1);
-          }
-          
-          // Insert dragged field at the new position
-          this.fieldGroup.splice(_fieldIndex, 0, draggedField);
+        // handle same field group drop to avoid index shift
+        if (originalFieldGroup === this.field.parent.fieldGroup && originalIndex < _fieldIndex) {
+          _fieldIndex--;
         }
+        
+        if (originalIndex !== -1) {
+          originalFieldGroup.splice(originalIndex, 1);
+        }
+        
+        // Insert dragged field at the new position
+        this.field.parent.fieldGroup.splice(_fieldIndex, 0, draggedField);
       }
 
       delete this.entityFormSvc.dragData[this.hostId!];
