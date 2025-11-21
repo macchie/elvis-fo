@@ -64,13 +64,19 @@ export class EntityFormService {
     }
   }
 
+  initFormSpec(_key: string) {
+    if (!this.formSpec[_key]) {
+      this.formSpec[_key] = { fields: [this.getNewField()] };
+      this.refreshIDs(_key);
+    }
+  }
+
   getNewField(): ElvisFormlyFieldConfig {
     return {
       __builderType: 'layout',
       __builderWrapper: 'panel',
-      key: 'panel',
       type: 'panel',
-      props: { },
+      props: {},
       fieldGroup: [],
       className: this.sizeOptions[this.sizeOptions.length - 1].value, // default to Full
     }
@@ -94,16 +100,31 @@ export class EntityFormService {
     this.refreshIDs(_key);
   }
 
-  onRemoveField(_key: string, _fields: ElvisFormlyFieldConfig[], _field: ElvisFormlyFieldConfig) {
-    if (!_fields || !_field) {
+  onRemoveField(_key: string, _field: ElvisFormlyFieldConfig) {
+    console.log('Removing field', _field);
+    
+    if (!_field) {
       return;
     }
 
-    const fieldIndex = _fields.findIndex((f: any) => f.id === _field.id);
-    
-    if (fieldIndex !== -1) {
-      _fields.splice(fieldIndex, 1);
+    const _removeById = (arr: ElvisFormlyFieldConfig[], targetId: string) => {
+      for (let i = arr.length - 1; i >= 0; i--) {
+        const item = arr[i];
+
+        // Remove the element if the id matches
+        if (item.id === targetId) {
+          arr.splice(i, 1);
+          continue;
+        }
+
+        // Recurse into children
+        if (Array.isArray(item.fieldGroup)) {
+          _removeById(item.fieldGroup, targetId);
+        }
+      }
     }
+
+    _removeById(this.formSpec[_key].fields, _field.id!);
 
     this.refreshIDs(_key);
   }
@@ -136,7 +157,7 @@ export class EntityFormService {
 
   private _generateIDs(_key: string, _fields?: ElvisFormlyFieldConfig[], _prefix?: string) {
     if (!_fields && !_prefix) {
-      _fields = this.formSpec[_key].fields;
+      _fields = this.formSpec[_key]?.fields || [];
     }
 
     if (!_fields) {

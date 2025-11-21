@@ -1,29 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { MockData, TableColumnInfo } from '../../services/mock-data';
-import { InputTextModule } from 'primeng/inputtext';
-import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
-import { TooltipModule } from 'primeng/tooltip';
-import { Popover, PopoverModule } from 'primeng/popover';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
-import { SelectModule } from 'primeng/select';
-import { DividerModule } from 'primeng/divider';
-import { SelectButtonModule } from 'primeng/selectbutton';
-import { FloatLabelModule } from 'primeng/floatlabel';
-import { ToggleSwitchModule } from 'primeng/toggleswitch';
-import { ButtonGroupModule } from 'primeng/buttongroup';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { MockData } from '../../services/mock-data';
 import { Drawer, DrawerModule } from 'primeng/drawer';
-import { AutoCompleteModule } from 'primeng/autocomplete';
 import { Subject } from 'rxjs';
-import { ElvisFormlyFieldConfig, FormSpec } from '../../interfaces/form-spec.interface';
-import { DragDropModule } from 'primeng/dragdrop';
-import { FormlyField, FormlyFieldConfig } from '@ngx-formly/core';
-import { CardModule } from 'primeng/card';
-import { AccordionModule } from 'primeng/accordion';
 import { EntityFormBuilderField } from '../entity-form-builder-field/entity-form-builder-field';
 import { EntityFormService } from '../../services/entity-form-service';
 
@@ -47,24 +28,7 @@ export const FieldType = {
     CommonModule,
     FormsModule,
     ButtonModule,
-    InputTextModule,
-    ContextMenuModule,
-    TooltipModule,
-    PopoverModule,
-    InputGroupModule,
-    InputGroupAddonModule,
-    SelectModule,
-    DividerModule,
-    SelectButtonModule,
-    FloatLabelModule,
-    ToggleSwitchModule,
-    ButtonGroupModule,
-    MultiSelectModule,
     DrawerModule,
-    AutoCompleteModule,
-    DragDropModule,
-    CardModule,
-    AccordionModule,
     EntityFormBuilderField
   ],
   templateUrl: './entity-form-builder.html',
@@ -76,24 +40,20 @@ export class EntityFormBuilder implements OnInit {
   @Output() formSpecChange: Subject<void> = new Subject<void>();
   @Output() formSpecSaved: Subject<void> = new Subject<void>();
 
-  @ViewChild('editFieldPopover') editFieldPopover!: Popover;
   @ViewChild('editFieldDrawer') editFieldDrawer!: Drawer;
-  @ViewChild('contextMenu', { static: false }) contextMenu!: ContextMenu;
 
   showDropzones: boolean = false;
 
   constructor(
     public mockDataSvc: MockData,
     public entityFormSvc: EntityFormService,
-    private cd: ChangeDetectorRef
   ) {
     
   }
 
   async ngOnInit() {
-  }
-
-  async onSave() {
-    this.entityFormSvc.onSaveSpec(this.hostId!);
+    if (this.hostId) {
+      await this.entityFormSvc.initFormSpec(this.hostId);
+    }
   }
 }

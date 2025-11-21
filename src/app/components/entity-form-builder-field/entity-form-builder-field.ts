@@ -147,6 +147,13 @@ export class EntityFormBuilderField implements OnInit {
     this.field.__builderRules.push({ type: 'hidden' });
   }
 
+  onAddFilter() {
+    if (!this.field.__builderFilters) {
+      this.field.__builderFilters = [];
+    }
+    this.field.__builderFilters.push({ });
+  }
+
   onAddField() {
     this.entityFormSvc.onAddField(this.hostId!, this.field.fieldGroup);
   }
@@ -166,6 +173,12 @@ export class EntityFormBuilderField implements OnInit {
   onRemoveRule(index: number) {
     if (this.field.__builderRules && index >= 0 && index < this.field.__builderRules.length) {
       this.field.__builderRules.splice(index, 1);
+    }
+  }
+
+  onRemoveFilter(index: number) {
+    if (this.field.__builderFilters && index >= 0 && index < this.field.__builderFilters.length) {
+      this.field.__builderFilters.splice(index, 1);
     }
   }
 

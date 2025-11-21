@@ -1,19 +1,20 @@
 
 <div id="builder-content" #builderContent class="grid grid-cols-12">
-  @for (_field of entityFormSvc.formSpec[hostId!].fields; track $index;) {
-    <app-entity-form-builder-field 
-      class="{{_field.className}}" 
-      [field]="_field"
-      [hostId]="hostId"
-      [showDropzones]="entityFormSvc.dragData[hostId!] != null && entityFormSvc.dragData[hostId!] != undefined"
-    ></app-entity-form-builder-field>
-  } 
-
-  @if (hostId) {
-    <div class="flex flex-row justify-center col-span-12">
-      <div class="flex flex-row flex-1 items-center py-2 justify-center border-2 border-dashed bg-white border-primary-300 rounded-lg">
-        <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId, entityFormSvc.formSpec[hostId!].fields)"></p-button>
-      </div>
-    </div>
+  @if (entityFormSvc.formSpec[hostId!]?.fields) {
+    @for (_field of entityFormSvc.formSpec[hostId!].fields; track $index;) {
+      <app-entity-form-builder-field 
+        class="{{_field.className}}" 
+        [field]="_field"
+        [hostId]="hostId"
+        [showDropzones]="entityFormSvc.dragData[hostId!] != null && entityFormSvc.dragData[hostId!] != undefined"
+      ></app-entity-form-builder-field>
+    } 
   }
+
+
+  <div class="flex flex-row justify-center col-span-12">
+    <div class="flex flex-row flex-1 items-center py-2 justify-center border-2 border-dashed bg-white border-primary-300 rounded-lg">
+      <p-button size="small" text icon="pi pi-plus" label="Add Field" (click)="entityFormSvc.onAddField(hostId!, entityFormSvc.formSpec[hostId!].fields)"></p-button>
+    </div>
+  </div>
 </div>

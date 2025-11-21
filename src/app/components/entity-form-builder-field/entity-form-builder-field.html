@@ -25,7 +25,7 @@
     </div> -->
    
     <div id="field-toolbar">
-      <div class="flex flex-row items-center justify-between gap-4">
+      <div class="flex flex-row items-center justify-between gap-2">
         <!-- @if (field.__builderType === 'layout') {
           @if (field.type === 'panel') {
             <i class="pi pi-expand"></i>
@@ -64,7 +64,7 @@
   
       <div class="flex flex-row items-center justify-between">
         <p-button icon="pi pi-pen-to-square" severity="secondary" size="small" text (click)="onEditField()" />
-        <p-button icon="pi pi-trash" severity="danger" size="small" text (click)="entityFormSvc.onRemoveField(hostId!, field.parent.fieldGroup, field)" />
+        <p-button icon="pi pi-trash" severity="danger" size="small" text (click)="entityFormSvc.onRemoveField(hostId!, field)" />
       </div>
     </div>
   
@@ -123,7 +123,7 @@
             <p-tabs [value]="0">
               <p-tablist>
                 @for (_groupField of field.fieldGroup; track $index) {
-                  <p-tab [value]="$index">{{ _groupField.props?.label || _groupField.key }}</p-tab>
+                  <p-tab [value]="$index">{{ _groupField.props?.label || 'Tab' }}</p-tab>
                 }
               </p-tablist>
               <p-tabpanels>
@@ -379,6 +379,45 @@
             </div>
         
           </div>
+
+          <p-fieldset legend="Filters" [toggleable]="false">
+            <div class="flex flex-col gap-6 mt-2">
+              @for (rule of field.__builderFilters; track $index) {
+                <div class="flex flex-row items-center justify-between gap-4">
+                  <!-- <p-floatlabel variant="on" class="flex-2">
+                    <p-select fluid [options]="entityFormSvc.ruleTypes" optionLabel="label" optionValue="value"
+                      [(ngModel)]="rule.type" />
+                    <label for="ruleType">Rule</label>
+                  </p-floatlabel> -->
+            
+                  <p-floatlabel variant="on" class="flex-4">
+                    <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
+                      [(ngModel)]="rule.field" />
+                    <label for="ruleField">Where</label>
+                  </p-floatlabel>
+            
+                  <p-floatlabel variant="on" class="flex-2">
+                    <p-select fluid [options]="entityFormSvc.ruleConditions" optionLabel="label" optionValue="value"
+                      [(ngModel)]="rule.condition" />
+                    <label for="ruleCondition">Condition</label>
+                  </p-floatlabel>
+            
+                  <p-floatlabel variant="on" class="flex-4">
+                    <p-select fluid [options]="fieldList" [filter]="true" filterBy="name" optionLabel="name" optionValue="name"
+                      [(ngModel)]="rule.conditionValue" />
+                    <label for="ruleField">Value</label>
+                  </p-floatlabel>
+            
+                  <p-button text icon="pi pi-times" severity="danger" (click)="onRemoveFilter($index)"></p-button>
+                </div>
+              }
+          
+              <div
+                class="flex flex-row items-center justify-center py-1 px-2 border-2 border-dashed border-surface-300 rounded-lg">
+                <p-button size="small" text icon="pi pi-plus" label="Add Filter" (click)="onAddFilter()"></p-button>
+              </div>
+            </div>
+          </p-fieldset>
         </p-fieldset>
       }
     }
@@ -407,7 +446,7 @@
           </div>
         }
 
-        <div class="flex flex-row items-center justify-center py-2 px-4 border-2 border-dashed border-surface-300 rounded-lg">
+        <div class="flex flex-row items-center justify-center py-1 px-2 border-2 border-dashed border-surface-300 rounded-lg">
           <p-button size="small" text icon="pi pi-plus" label="Add Rule" (click)="onAddRule()"></p-button>
         </div>
   

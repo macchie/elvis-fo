@@ -43,7 +43,6 @@ export interface FormlyInputFieldConfig extends FormlyFieldConfig<BelongsToProps
           [optionValue]="props.toField" 
           [formControl]="formControl" 
           [formlyAttributes]="field" 
-          [placeholder]="'Select'"
           [disabled]="props.disabled!"
           [showClear]="true"
         />

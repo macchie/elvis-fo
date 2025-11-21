@@ -11,23 +11,21 @@ export interface FormlyFieldProps extends CoreFormlyFieldProps {
   selector: 'formly-wrapper-elvisfo-tabs-wrapper',
   styleUrl: './tabs.wrapper.scss',
   template: `
-    <p-card>
-      <p-tabs [value]="0">
-        <p-tablist>
-          @for (field of field.fieldGroup; track $index) {
-            <p-tab [value]="$index">{{field.props?.label || field.key}}</p-tab>
-          }
-        </p-tablist>
+    <p-tabs [value]="0" class="rounded-lg overflow-hidden border border-primary-200">
+      <p-tablist>
+        @for (field of field.fieldGroup; track $index) {
+          <p-tab [value]="$index">{{field.props?.label || field.key}}</p-tab>
+        }
+      </p-tablist>
 
-        <p-tabpanels>
-          @for (field of field.fieldGroup; track $index) {
-            <p-tabpanel [value]="$index">
-              <formly-field [field]="field"></formly-field>
-            </p-tabpanel>
-          }
-        </p-tabpanels>
-      </p-tabs>
-    </p-card>
+      <p-tabpanels>
+        @for (field of field.fieldGroup; track $index) {
+          <p-tabpanel [value]="$index">
+            <formly-field [field]="field"></formly-field>
+          </p-tabpanel>
+        }
+      </p-tabpanels>
+    </p-tabs>
   `,
   standalone: false
 })
